@@ -793,6 +793,14 @@ export async function adminLogin(formData: FormData) {
 
 export async function adminLogout() {
   try {
+    // Clear the admin session cookie
+    cookies().set("admin_session", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 0, // Expire immediately
+      path: "/",
+    })
+
     return { success: true }
   } catch (error) {
     console.error("Logout error:", error)
