@@ -393,6 +393,14 @@ export async function registerStudent(formData: FormData) {
     console.log("Insert result - Data:", student)
     console.log("Insert result - Error:", insertError)
 
+    if (insertError) {
+      console.error("Database insert failed:", insertError)
+      return {
+        success: false,
+        error: `Failed to save registration: ${insertError.message}`,
+      }
+    }
+
     console.log("Student registered successfully with ID:", student?.id)
 
     console.log("=== REGISTRATION SUCCESS ===")

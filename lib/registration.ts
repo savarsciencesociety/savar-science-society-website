@@ -5,11 +5,55 @@
  *
  * A (1st digit): Always 3 (Savar Science Society)
  * BC (2nd-3rd digits): School code
- *   01 = SCPSC
- *   02 = JUSC
- *   03 = BPATC
- *   04 = GBS
- *   05 = SCLS
+ *   01 = Central Laboratory School and College
+ *   02 = Rajashon Laboratory School and College
+ *   03 = Anandapur Laboratory School and College
+ *   04 = Jahangirnagar Society Laboratory School and College
+ *   05 = Standard Pilot School
+ *   06 = Promise Residential Model School
+ *   07 = Shahin School
+ *   08 = Chapain New Model High School
+ *   09 = New Model Pre-Cadet School And College
+ *   10 = Unique School
+ *   11 = Rayhan School
+ *   12 = Jabal -E -Noor Dakhil Madrasa
+ *   13 = Jabal -E -Noor Mahila Madrasa
+ *   14 = Jabal -E -Noor Ideal Madrasa
+ *   15 = Jabal -E -Noor Model Madrasa
+ *   16 = Saint Joseph Hight School Rajason
+ *   17 = Akrain Uccha Biddalaya
+ *   18 = Hanada School
+ *   19 = Udayan School
+ *   20 = Savar Laboratory School and College
+ *   21 = Green Bell Laboratory School and College
+ *   22 = Angelica International School
+ *   23 = BPATC
+ *   24 = Park View School
+ *   25 = Savar Model Academy
+ *   26 = Sarnakali Adarsa Uccho Biddhalaya
+ *   27 = Biddyakanan Pre-Cadet School
+ *   28 = Gayen Bikash School
+ *   29 = Child heaven School
+ *   30 = Scholars School
+ *   31 = Silver del School
+ *   32 = Badda High School
+ *   33 = Bornomala School
+ *   34 = Sena Public School and College
+ *   35 = Little Star School and College
+ *   36 = Sunflower School and College
+ *   37 = GTFC School and College 1
+ *   38 = GTFC School and College 2
+ *   39 = Presidency School and College
+ *   40 = Amin Model Town School and College
+ *   41 = Amin Cadet Academy
+ *   42 = Polashbari Hazi Joynuddin School and College
+ *   43 = Robi Model Academy
+ *   44 = Savar Public School
+ *   45 = Al-hera School
+ *   46 = Savar Digital Ideal School and College
+ *   47 = Merin School
+ *   48 = Shaheed Majnu Academy
+ *   49 = Savar Adarsha School and College
  * DE (4th-5th digits): Class
  *   05 = Class 5
  *   06 = Class 6
@@ -35,11 +79,55 @@ export interface RegistrationData {
 }
 
 export const SCHOOL_CODES = {
-  SCPSC: "01",
-  JUSC: "02",
-  BPATC: "03",
-  GBS: "04",
-  SCLS: "05",
+  "Central Laboratory School and College": "01",
+  "Rajashon Laboratory School and College": "02",
+  "Anandapur Laboratory School and College": "03",
+  "Jahangirnagar Society Laboratory School and College": "04",
+  "Standard Pilot School": "05",
+  "Promise Residential Model School": "06",
+  "Shahin School": "07",
+  "Chapain New Model High School": "08",
+  "New Model Pre-Cadet School And College": "09",
+  "Unique School": "10",
+  "Rayhan School": "11",
+  "Jabal -E -Noor Dakhil Madrasa": "12",
+  "Jabal -E -Noor Mahila Madrasa": "13",
+  "Jabal -E -Noor Ideal Madrasa": "14",
+  "Jabal -E -Noor Model Madrasa": "15",
+  "Saint Joseph Hight School Rajason": "16",
+  "Akrain Uccha Biddalaya": "17",
+  "Hanada School": "18",
+  "Udayan School": "19",
+  "Savar Laboratory School and College": "20",
+  "Green Bell Laboratory School and College": "21",
+  "Angelica International School": "22",
+  BPATC: "23",
+  "Park View School": "24",
+  "Savar Model Academy": "25",
+  "Sarnakali Adarsa Uccho Biddhalaya": "26",
+  "Biddyakanan Pre-Cadet School": "27",
+  "Gayen Bikash School": "28",
+  "Child heaven School": "29",
+  "Scholars School": "30",
+  "Silver del School": "31",
+  "Badda High School": "32",
+  "Bornomala School": "33",
+  "Sena Public School and College": "34",
+  "Little Star School and College": "35",
+  "Sunflower School and College": "36",
+  "GTFC School and College 1": "37",
+  "GTFC School and College 2": "38",
+  "Presidency School and College": "39",
+  "Amin Model Town School and College": "40",
+  "Amin Cadet Academy": "41",
+  "Polashbari Hazi Joynuddin School and College": "42",
+  "Robi Model Academy": "43",
+  "Savar Public School": "44",
+  "Al-hera School": "45",
+  "Savar Digital Ideal School and College": "46",
+  "Merin School": "47",
+  "Shaheed Majnu Academy": "48",
+  "Savar Adarsha School and College": "49",
 } as const
 
 export const SUBJECT_CODES = {
@@ -178,6 +266,15 @@ export function parseRegistrationNumber(registrationNumber: string): {
   }
 }
 
+// Add helper function to get olympiad roll number
+export function getOlympiadRoll(registrationNumber: string): string {
+  if (registrationNumber.length !== 10) {
+    return ""
+  }
+  // Remove the first digit (3) to get 9-digit olympiad roll
+  return registrationNumber.substring(1)
+}
+
 /**
  * Example usage and test cases
  */
@@ -189,34 +286,34 @@ export function getRegistrationExamples(): Array<{
 }> {
   return [
     {
-      description: "SCPSC, Class 7, Math, Male, 1st student",
-      data: { school: "SCPSC", class: "7", olympiadType: "Math", gender: "male" },
+      description: "Central Laboratory School and College, Class 7, Math, Male, 1st student",
+      data: { school: "Central Laboratory School and College", class: "7", olympiadType: "Math", gender: "male" },
       expectedBase: "3010721",
       fullExample: "3010721001",
     },
     {
-      description: "SCPSC, Class 7, Math, Female, 1st student",
-      data: { school: "SCPSC", class: "7", olympiadType: "Math", gender: "female" },
+      description: "Central Laboratory School and College, Class 7, Math, Female, 1st student",
+      data: { school: "Central Laboratory School and College", class: "7", olympiadType: "Math", gender: "female" },
       expectedBase: "3010722",
       fullExample: "3010722001",
     },
     {
       description: "BPATC, Class 8, Science, Male, 1st student",
       data: { school: "BPATC", class: "8", olympiadType: "Science", gender: "male" },
-      expectedBase: "3030811",
-      fullExample: "3030811001",
+      expectedBase: "3230811",
+      fullExample: "3230811001",
     },
     {
       description: "BPATC, Class 8, Science, Female, 1st student",
       data: { school: "BPATC", class: "8", olympiadType: "Science", gender: "female" },
-      expectedBase: "3030812",
-      fullExample: "3030812001",
+      expectedBase: "3230812",
+      fullExample: "3230812001",
     },
     {
-      description: "GBS, Class 10, Physics, Male, 1st student",
-      data: { school: "GBS", class: "10", olympiadType: "Physics", gender: "male" },
-      expectedBase: "3041031",
-      fullExample: "3041031001",
+      description: "Gayen Bikash School, Class 10, Physics, Male, 1st student",
+      data: { school: "Gayen Bikash School", class: "10", olympiadType: "Physics", gender: "male" },
+      expectedBase: "3281031",
+      fullExample: "3281031001",
     },
   ]
 }

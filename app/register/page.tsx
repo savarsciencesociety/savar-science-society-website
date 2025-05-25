@@ -15,7 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/components/ui/use-toast"
 import { registerStudent } from "@/lib/actions"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { Phone, AlertCircle, Loader2, CheckCircle } from "lucide-react"
+import { Phone, AlertCircle, Loader2, CheckCircle, ChevronDown } from "lucide-react"
 import { validateImageDimensions } from "@/lib/image-utils"
 import { MobileNav } from "@/components/mobile-nav"
 import { IMAGES, SOCIAL_LINKS } from "@/lib/image-paths"
@@ -36,6 +36,8 @@ export default function RegisterPage() {
   const [registrationSuccess, setRegistrationSuccess] = useState(false)
   const [registrationNumber, setRegistrationNumber] = useState("")
   const [studentId, setStudentId] = useState("")
+  const [schoolSearch, setSchoolSearch] = useState("")
+  const [showSchoolDropdown, setShowSchoolDropdown] = useState(false)
   const photoInputRef = useRef<HTMLInputElement>(null)
   const signatureInputRef = useRef<HTMLFormElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
@@ -52,13 +54,17 @@ export default function RegisterPage() {
     address: "",
     gender: "",
     dateOfBirth: "",
-    educationalInstitute: "",
     dreamUniversity: "",
     previousScholarship: "no",
     scholarshipDetails: "",
     photo: null as File | null,
     signature: null as File | null,
   })
+
+  // Filter schools based on search
+  const filteredSchools = Object.keys(SCHOOL_CODES).filter((school) =>
+    school.toLowerCase().includes(schoolSearch.toLowerCase()),
+  )
 
   // Validate form before submission
   const validateForm = () => {
@@ -74,13 +80,20 @@ export default function RegisterPage() {
     if (!formData.address) errors.address = "Address is required"
     if (!formData.gender) errors.gender = "Please select a gender"
     if (!formData.dateOfBirth) errors.dateOfBirth = "Date of birth is required"
-    if (!formData.educationalInstitute) errors.educationalInstitute = "Educational institute is required"
     if (!formData.dreamUniversity) errors.dreamUniversity = "Please select a dream university"
-    // Photo is now optional - removed from validation
+    // Photo is optional
     // Signature is optional
 
     setFormErrors(errors)
     return Object.keys(errors).length === 0
+  }
+
+  // Handle school selection
+  const handleSchoolSelect = (school: string) => {
+    setFormData({ ...formData, school })
+    setSchoolSearch(school)
+    setShowSchoolDropdown(false)
+    setFormErrors((prev) => ({ ...prev, school: undefined }))
   }
 
   // Update the handlePhotoChange function
@@ -179,7 +192,7 @@ export default function RegisterPage() {
       formDataToSubmit.append("address", formData.address)
       formDataToSubmit.append("gender", formData.gender)
       formDataToSubmit.append("dateOfBirth", formData.dateOfBirth)
-      formDataToSubmit.append("educationalInstitute", formData.educationalInstitute)
+      formDataToSubmit.append("educationalInstitute", formData.school) // Use school as educational institute
       formDataToSubmit.append("dreamUniversity", formData.dreamUniversity)
       formDataToSubmit.append("previousScholarship", formData.previousScholarship)
       formDataToSubmit.append("scholarshipDetails", formData.scholarshipDetails || "")
@@ -374,25 +387,39 @@ export default function RegisterPage() {
             </div>
 
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
-              {/* School Selection */}
+              {/* School Selection with Search */}
               <div className="space-y-4">
-                <h4 className="text-lg font-semibold text-gray-800 dark:text-white">School</h4>
-                <div className="grid grid-cols-1 gap-2">
-                  {Object.entries(SCHOOL_CODES).map(([schoolName, code]) => (
-                    <div key={schoolName} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`school-${schoolName}`}
-                        checked={formData.school === schoolName}
-                        onCheckedChange={() => {
-                          setFormData({ ...formData, school: schoolName })
-                          setFormErrors((prev) => ({ ...prev, school: undefined }))
-                        }}
-                      />
-                      <Label htmlFor={`school-${schoolName}`} className="text-gray-700 dark:text-gray-300">
-                        {schoolName}
-                      </Label>
+                <h4 className="text-lg font-semibold text-gray-800 dark:text-white">School/Institution</h4>
+                <div className="relative">
+                  <Input
+                    placeholder="Search and select your school/institution..."
+                    value={schoolSearch}
+                    onChange={(e) => {
+                      setSchoolSearch(e.target.value)
+                      setShowSchoolDropdown(true)
+                    }}
+                    onFocus={() => setShowSchoolDropdown(true)}
+                    className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 dark:bg-gray-700"
+                  />
+                  <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
+
+                  {showSchoolDropdown && (
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      {filteredSchools.length > 0 ? (
+                        filteredSchools.map((school) => (
+                          <div
+                            key={school}
+                            className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer text-gray-700 dark:text-gray-300"
+                            onClick={() => handleSchoolSelect(school)}
+                          >
+                            {school}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-2 text-gray-500 dark:text-gray-400">No schools found</div>
+                      )}
                     </div>
-                  ))}
+                  )}
                 </div>
                 {formErrors.school && <p className="text-red-500 text-xs mt-1">{formErrors.school}</p>}
               </div>
@@ -668,27 +695,6 @@ export default function RegisterPage() {
                       />
                       {formErrors.dateOfBirth && <p className="text-red-500 text-xs mt-1">{formErrors.dateOfBirth}</p>}
                     </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="educationalInstitute" className="text-gray-700 dark:text-gray-300">
-                      Educational Institute:
-                    </Label>
-                    <Input
-                      id="educationalInstitute"
-                      value={formData.educationalInstitute}
-                      onChange={(e) => {
-                        setFormData({ ...formData, educationalInstitute: e.target.value })
-                        setFormErrors((prev) => ({ ...prev, educationalInstitute: undefined }))
-                      }}
-                      className={`border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 dark:bg-gray-700 ${
-                        formErrors.educationalInstitute ? "border-red-500" : ""
-                      }`}
-                      required
-                    />
-                    {formErrors.educationalInstitute && (
-                      <p className="text-red-500 text-xs mt-1">{formErrors.educationalInstitute}</p>
-                    )}
                   </div>
 
                   <div>
