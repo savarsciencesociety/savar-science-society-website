@@ -80,8 +80,9 @@ export function GoogleDriveImage({
           setImageError(true)
           setIsLoading(false)
         }}
-        unoptimized // Important for external images
+        unoptimized
       />
+      {/* unoptimized is required because the images are served directly from Google Drive */}
     </div>
   )
 }
