@@ -54,7 +54,12 @@
  *   47 = Merin School
  *   48 = Shaheed Majnu Academy
  *   49 = Savar Adarsha School and College
- * DE (4th-5th digits): Class
+ *   50 = Savar Cantonment Board Boys High School
+ *   51 = Savar Cantonment Borad Girls High School 
+ *   52 = Savar Cantonment Public School And College 
+ *   53 = BEPZA Public School & College
+ *   54 = Morning Glory School & College
+ *   DE (4th-5th digits): Class
  *   05 = Class 5
  *   06 = Class 6
  *   07 = Class 7
@@ -101,7 +106,7 @@ export const SCHOOL_CODES = {
   "Savar Laboratory School and College": "20",
   "Green Bell Laboratory School and College": "21",
   "Angelica International School": "22",
-  BPATC: "23",
+  "BPATC": "23",
   "Park View School": "24",
   "Savar Model Academy": "25",
   "Sarnakali Adarsa Uccho Biddhalaya": "26",
@@ -128,6 +133,11 @@ export const SCHOOL_CODES = {
   "Merin School": "47",
   "Shaheed Majnu Academy": "48",
   "Savar Adarsha School and College": "49",
+  "Savar Cantonment Board Boys High School": "50",
+  "Savar Cantonment Board Girls High School": "51",
+  "Savar Cantonment Public School And College": "52",
+  "Morning Glory School & College": "53",
+  "BEPZA Public School & College": "54",
 } as const
 
 export const SUBJECT_CODES = {
