@@ -72,6 +72,15 @@ export const OLYMPIAD_PHOTOS = [
   },
 ]
 
+// Re-export from google-drive-utils for backward compatibility
+export {
+  getImageUrl,
+  extractFileId,
+  getDirectImageUrl,
+  getThumbnailUrl,
+  isValidGoogleDriveUrl,
+} from "./google-drive-utils"
+
 // Convert Google Drive share links to direct image URLs
 export function convertGoogleDriveUrl(shareUrl: string): string {
   const fileIdMatch = shareUrl.match(/\/d\/([a-zA-Z0-9-_]+)/)
@@ -80,14 +89,4 @@ export function convertGoogleDriveUrl(shareUrl: string): string {
     return `https://drive.google.com/uc?export=view&id=${fileId}`
   }
   return shareUrl
-}
-
-// Alternative function to get thumbnail URLs for better performance
-export function getGoogleDriveThumbnail(fileId: string, size = 800): string {
-  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w${size}`
-}
-
-// Function to validate Google Drive URLs
-export function isValidGoogleDriveUrl(url: string): boolean {
-  return url.includes("drive.google.com") && (url.includes("/uc?") || url.includes("/thumbnail?"))
 }

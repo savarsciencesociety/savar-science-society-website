@@ -10,7 +10,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { MainNav } from "@/components/main-nav"
 import { MobileNav } from "@/components/mobile-nav"
 import { IMAGES, SOCIAL_LINKS } from "@/lib/image-paths"
-import { OLYMPIAD_PHOTOS } from "@/lib/photo-utils"
+import { OLYMPIAD_PHOTOS } from "@/lib/google-drive-utils"
 import { getAdmitCardSetting } from "@/lib/actions"
 import {
   Calendar,
@@ -23,7 +23,6 @@ import {
   Phone,
   Mail,
   Award,
-  Target,
   Zap,
   Sparkles,
   Rocket,
@@ -75,19 +74,16 @@ export default function HomePage() {
       }
     }
 
-    // Loading animation
     const loadingTimer = setTimeout(() => {
       setIsLoading(false)
       setIsVisible(true)
-    }, 1500) // Reduced loading time
+    }, 1500)
 
     checkAdmitCard()
 
-    // Optimized scroll tracking with throttling
     const handleScroll = throttle(() => {
       setScrollY(window.scrollY)
 
-      // Update active section based on scroll position
       const sections = ["hero", "about", "gallery", "details", "contact"]
       const currentSection = sections.find((section) => {
         const element = document.getElementById(section)
@@ -98,11 +94,10 @@ export default function HomePage() {
         return false
       })
       if (currentSection) setActiveSection(currentSection)
-    }, 16) // 60fps
+    }, 16)
 
     window.addEventListener("scroll", handleScroll, { passive: true })
 
-    // Auto-rotate photos
     const photoInterval = setInterval(() => {
       if (isAutoPlay) {
         setCurrentPhotoIndex((prev) => (prev + 1) % OLYMPIAD_PHOTOS.length)
@@ -123,7 +118,6 @@ export default function HomePage() {
     }
   }
 
-  // Loading Screen
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center z-50">
@@ -185,7 +179,6 @@ export default function HomePage() {
         ref={heroRef}
         className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20"
       >
-        {/* Simplified Animated Grid Background */}
         <div className="absolute inset-0 opacity-10 dark:opacity-20">
           <div
             className="absolute inset-0"
@@ -195,12 +188,11 @@ export default function HomePage() {
               linear-gradient(90deg, rgba(6, 182, 212, 0.1) 1px, transparent 1px)
             `,
               backgroundSize: "50px 50px",
-              transform: `translate(${scrollY * 0.05}px, ${scrollY * 0.05}px)`, // Reduced parallax effect
+              transform: `translate(${scrollY * 0.05}px, ${scrollY * 0.05}px)`,
             }}
           />
         </div>
 
-        {/* Reduced Floating Geometric Shapes for better performance */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {[...Array(8)].map((_, i) => (
             <div
@@ -210,7 +202,7 @@ export default function HomePage() {
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
                 animationDelay: `${Math.random() * 10}s`,
-                animationDuration: `${10 + Math.random() * 4}s`, // Slower animations
+                animationDuration: `${10 + Math.random() * 4}s`,
               }}
             >
               <div
@@ -282,7 +274,6 @@ export default function HomePage() {
               )}
             </div>
 
-            {/* Interactive Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
               {[
                 { icon: Users, label: "Participants", value: "10,000+", color: "from-blue-500 to-cyan-500" },
@@ -307,7 +298,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Scroll Indicator */}
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
             <button
               onClick={() => scrollToSection("about")}
@@ -322,69 +312,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* About Section */}
-      <section id="about" className="py-32 relative">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-black mb-8 bg-gradient-to-r from-slate-800 to-cyan-600 dark:from-white dark:to-cyan-400 bg-clip-text text-transparent">
-              About Our Mission
-            </h2>
-            <p className="text-xl text-slate-700 dark:text-slate-300 max-w-4xl mx-auto leading-relaxed">
-              We're not just organizing a competition – we're building the future of scientific innovation in
-              Bangladesh.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-            {[
-              {
-                icon: Target,
-                title: "Our Mission",
-                description:
-                  "To identify and nurture young talents in mathematics and science, providing them with platforms to excel and grow into tomorrow's innovators.",
-                gradient: "from-blue-500 to-cyan-500",
-              },
-              {
-                icon: Brain,
-                title: "Our Vision",
-                description:
-                  "Creating a community of brilliant minds who will lead Bangladesh's scientific and technological advancement on the global stage.",
-                gradient: "from-purple-500 to-pink-500",
-              },
-              {
-                icon: Rocket,
-                title: "Our Impact",
-                description:
-                  "Over 25,000 students have participated in our olympiads, with many going on to achieve excellence in their academic and professional careers.",
-                gradient: "from-emerald-500 to-teal-500",
-              },
-            ].map((item, index) => (
-              <Card
-                key={index}
-                className="group bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 rounded-3xl overflow-hidden"
-              >
-                <CardContent className="p-10 text-center relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-transparent to-slate-50/50 dark:to-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div
-                    className={`bg-gradient-to-r ${item.gradient} w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-8 group-hover:rotate-6 group-hover:scale-110 transition-all duration-300 shadow-lg`}
-                  >
-                    <item.icon className="h-10 w-10 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-6 text-slate-800 dark:text-white">{item.title}</h3>
-                  <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{item.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Photo Gallery Section */}
       <section
         id="gallery"
         className="py-32 bg-gradient-to-br from-slate-100 to-blue-100 dark:from-slate-800 dark:to-purple-900 relative overflow-hidden"
       >
-        {/* Soft patterned backdrop */}
         <div
           className="absolute inset-0 opacity-30 dark:opacity-50"
           style={{
@@ -408,16 +340,16 @@ export default function HomePage() {
           <div className="relative mb-16 max-w-6xl mx-auto">
             <div className="relative h-96 md:h-[600px] rounded-3xl overflow-hidden shadow-2xl group">
               <GoogleDriveImage
-                src={OLYMPIAD_PHOTOS[currentPhotoIndex]?.url || "/placeholder.svg?height=600&width=1000"}
+                photo={OLYMPIAD_PHOTOS[currentPhotoIndex]}
                 alt={OLYMPIAD_PHOTOS[currentPhotoIndex]?.title || "Olympiad Photo"}
                 fill
                 className="object-cover transition-all duration-700 group-hover:scale-105"
                 priority
+                useThumbnail={false}
               />
 
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-              {/* Photo Controls */}
               <div className="absolute top-6 right-6 flex items-center gap-3">
                 <button
                   onClick={() => setIsAutoPlay(!isAutoPlay)}
@@ -430,7 +362,6 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Photo Info */}
               <div className="absolute bottom-8 left-8 right-8 text-white">
                 <div className="bg-black/30 backdrop-blur-sm rounded-2xl p-6">
                   <h3 className="text-3xl font-bold mb-3">{OLYMPIAD_PHOTOS[currentPhotoIndex]?.title}</h3>
@@ -440,7 +371,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Photo Navigation */}
             <div className="flex justify-center mt-8 gap-3 flex-wrap">
               {OLYMPIAD_PHOTOS.map((_, index) => (
                 <button
@@ -462,10 +392,11 @@ export default function HomePage() {
               <div key={photo.id} className="group relative cursor-pointer" onClick={() => setCurrentPhotoIndex(index)}>
                 <div className="relative h-48 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
                   <GoogleDriveImage
-                    src={photo.url || "/placeholder.svg"}
+                    photo={photo}
                     alt={photo.title}
                     fill
                     className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    useThumbnail={true}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute bottom-3 left-3 right-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -773,37 +704,6 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
-
-      {/* Optimized Custom Styles */}
-      <style jsx>{`
-        @keyframes float-geometric {
-          0%, 100% { 
-            transform: translateY(0px) rotate(0deg) scale(1); 
-            opacity: 0.4;
-          }
-          50% { 
-            transform: translateY(-20px) rotate(90deg) scale(1.05); 
-            opacity: 0.6;
-          }
-        }
-        
-        @keyframes bounce-slow {
-          0%, 100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(-8px);
-          }
-        }
-        
-        .animate-float-geometric {
-          animation: float-geometric 14s ease-in-out infinite;
-        }
-        
-        .animate-bounce-slow {
-          animation: bounce-slow 3s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   )
 }

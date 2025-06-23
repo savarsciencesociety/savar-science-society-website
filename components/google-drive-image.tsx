@@ -2,9 +2,12 @@
 
 import { useState } from "react"
 import Image from "next/image"
+import { getImageUrl } from "@/lib/google-drive-utils"
+import type { GoogleDriveImage } from "@/lib/google-drive-utils"
 
 interface GoogleDriveImageProps {
-  src: string
+  photo?: GoogleDriveImage
+  src?: string
   alt: string
   width?: number
   height?: number
@@ -12,9 +15,11 @@ interface GoogleDriveImageProps {
   fill?: boolean
   priority?: boolean
   sizes?: string
+  useThumbnail?: boolean
 }
 
-export function GoogleDriveImage({
+export function GoogleDriveImageComponent({
+  photo,
   src,
   alt,
   width,
@@ -23,25 +28,13 @@ export function GoogleDriveImage({
   fill = false,
   priority = false,
   sizes,
+  useThumbnail = false,
 }: GoogleDriveImageProps) {
   const [imageError, setImageError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Extract file ID from Google Drive URL and create proper direct link
-  const getDirectImageUrl = (url: string) => {
-    if (url.includes("/uc?export=view&id=")) {
-      return url // Already in correct format
-    }
-
-    const fileIdMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/)
-    if (fileIdMatch) {
-      const fileId = fileIdMatch[1]
-      return `https://drive.google.com/uc?export=view&id=${fileId}`
-    }
-    return url
-  }
-
-  const imageUrl = getDirectImageUrl(src)
+  // Get image URL from photo object or direct src
+  const imageUrl = photo ? getImageUrl(photo, useThumbnail) : src || "/placeholder.svg"
 
   if (imageError) {
     return (
@@ -50,7 +43,10 @@ export function GoogleDriveImage({
         style={fill ? {} : { width, height }}
       >
         <div className="text-center p-4">
-          <div className="text-slate-500 dark:text-slate-400 text-sm">Image not available</div>
+          <div className="text-slate-500 dark:text-slate-400 text-sm">
+            {photo ? `${photo.title} - Image not available` : "Image not available"}
+          </div>
+          {photo && <div className="text-xs text-slate-400 mt-1">File: {photo.filename}</div>}
         </div>
       </div>
     )
@@ -60,10 +56,10 @@ export function GoogleDriveImage({
     <div className={`relative ${className}`}>
       {isLoading && (
         <div
-          className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 animate-pulse flex items-center justify-center"
+          className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 animate-pulse flex items-center justify-center z-10"
           style={fill ? {} : { width, height }}
         >
-          <div className="text-slate-500 dark:text-slate-400 text-sm">Loading...</div>
+          <div className="text-slate-500 dark:text-slate-400 text-sm">Loading {photo ? photo.title : "image"}...</div>
         </div>
       )}
       <Image
@@ -82,7 +78,8 @@ export function GoogleDriveImage({
         }}
         unoptimized
       />
-      {/* unoptimized is required because the images are served directly from Google Drive */}
     </div>
   )
 }
+
+export { GoogleDriveImageComponent as GoogleDriveImage }
