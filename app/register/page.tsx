@@ -46,4 +46,3 @@ const RegisterPage = () => {
 }
 
 export default RegisterPage
-</merged_code>
