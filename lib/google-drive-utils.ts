@@ -11,10 +11,11 @@ export interface GoogleDriveImage {
 // Extract file ID from Google Drive share URL
 export function extractFileId(shareUrl: string): string {
   // Handle different Google Drive URL formats
+  // Regex helpers (safe character classes)
   const patterns = [
-    /\/file\/d\/([a-zA-Z0-9-_]+)/, // Standard share URL
-    /id=([a-zA-Z0-9-_]+)/, // Direct ID parameter
-    /\/d\/([a-zA-Z0-9-_]+)/, // Short format
+    /\/file\/d\/([A-Za-z0-9_-]+)/, // Standard share URL
+    /id=([A-Za-z0-9_-]+)/, // Direct ID parameter
+    /\/d\/([A-Za-z0-9_-]+)/, // Short format
   ]
 
   for (const pattern of patterns) {
