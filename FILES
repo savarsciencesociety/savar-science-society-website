@@ -1,0 +1,13 @@
+export function MainNav() {
+   // ... rest of code here
+}
+
+// Allow both `import MainNav …` and `import { MainNav } …`
+export default MainNav;
+
+// In app/page.tsx
+import MainNav from "@/components/main-nav";
+
+// In components/mobile-nav.tsx
+import { MainNav } from "@/components/main-nav";
+</merged_code>

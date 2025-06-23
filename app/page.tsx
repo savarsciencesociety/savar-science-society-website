@@ -33,6 +33,7 @@ import {
   Play,
   Pause,
 } from "lucide-react"
+import { GoogleDriveImage } from "@/components/google-drive-image"
 
 // Throttle function for performance
 const throttle = (func: Function, delay: number) => {
@@ -406,7 +407,7 @@ export default function HomePage() {
           {/* Featured Photo Carousel */}
           <div className="relative mb-16 max-w-6xl mx-auto">
             <div className="relative h-96 md:h-[600px] rounded-3xl overflow-hidden shadow-2xl group">
-              <Image
+              <GoogleDriveImage
                 src={OLYMPIAD_PHOTOS[currentPhotoIndex]?.url || "/placeholder.svg?height=600&width=1000"}
                 alt={OLYMPIAD_PHOTOS[currentPhotoIndex]?.title || "Olympiad Photo"}
                 fill
@@ -460,7 +461,7 @@ export default function HomePage() {
             {OLYMPIAD_PHOTOS.map((photo, index) => (
               <div key={photo.id} className="group relative cursor-pointer" onClick={() => setCurrentPhotoIndex(index)}>
                 <div className="relative h-48 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
-                  <Image
+                  <GoogleDriveImage
                     src={photo.url || "/placeholder.svg"}
                     alt={photo.title}
                     fill
