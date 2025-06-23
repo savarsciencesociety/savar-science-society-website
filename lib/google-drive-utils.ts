@@ -11,7 +11,6 @@ export interface GoogleDriveImage {
 // Extract file ID from Google Drive share URL
 export function extractFileId(shareUrl: string): string {
   // Handle different Google Drive URL formats
-  // Regex helpers (safe character classes)
   const patterns = [
     /\/file\/d\/([A-Za-z0-9_-]+)/, // Standard share URL
     /id=([A-Za-z0-9_-]+)/, // Direct ID parameter
@@ -48,97 +47,112 @@ export function isValidGoogleDriveUrl(url: string): boolean {
   return url.includes("drive.google.com") && (url.includes("/uc?export=view") || url.includes("/thumbnail?"))
 }
 
-// PLACEHOLDER FILE IDs - Replace these with actual file IDs from your Google Drive
-// To get file IDs: Right-click each image → Get link → Copy the ID from the URL
+// Update the OLYMPIAD_PHOTOS array with the correct file IDs in the right order
 export const OLYMPIAD_PHOTOS: GoogleDriveImage[] = [
   {
     id: 1,
-    fileId: "REPLACE_WITH_ACTUAL_FILE_ID_1", // 20241102_111608.jpg
-    title: "Photo 1",
-    description: "Opening ceremony - Students gathering for the event",
+    fileId: "1iD2HsmCEOwn7E8aEYe6fiSXJkGWqYELs",
+    title: "Opening Ceremony",
+    description: "Students gathering for the grand opening ceremony of Olympiad 2.0",
     category: "Ceremony",
     filename: "20241102_111608.jpg",
   },
   {
     id: 2,
-    fileId: "REPLACE_WITH_ACTUAL_FILE_ID_2", // 20241102_114227.jpg
-    title: "Photo 2",
-    description: "Competition preparation and setup",
+    fileId: "1OkFOsjTxzHoWLBoa0VQ9iwMJWz0wkXEI",
+    title: "Competition Preparation",
+    description: "Students preparing and getting ready for the competition",
     category: "Preparation",
     filename: "20241102_114227.jpg",
   },
   {
     id: 3,
-    fileId: "REPLACE_WITH_ACTUAL_FILE_ID_3", // 20241102_114932.jpg
-    title: "Photo 3",
-    description: "Students focused during the examination",
+    fileId: "1c06qVSdi3MoKIvfpDC-kfgfNoHUfLejR",
+    title: "Focused Competition",
+    description: "Students deeply focused during the examination period",
     category: "Competition",
     filename: "20241102_114932.jpg",
   },
   {
     id: 4,
-    fileId: "REPLACE_WITH_ACTUAL_FILE_ID_4", // 20241102_124940.jpg
-    title: "Photo 4",
-    description: "Mid-competition activities and monitoring",
+    fileId: "1aZrLxs1rcZGgq01-vA46RcTT6tZCnf4Y",
+    title: "Problem Solving",
+    description: "Students working together on challenging mathematical problems",
     category: "Competition",
     filename: "20241102_124940.jpg",
   },
   {
     id: 5,
-    fileId: "REPLACE_WITH_ACTUAL_FILE_ID_5", // 20241102_125401.jpg
-    title: "Photo 5",
-    description: "Students working on challenging problems",
-    category: "Competition",
+    fileId: "1BY7SU7AAd7xhqMWqYQsDb4tAy2CD6VO4",
+    title: "Scientific Discovery",
+    description: "Hands-on learning and scientific discovery in action",
+    category: "Science",
     filename: "20241102_125401.jpg",
   },
   {
     id: 6,
-    fileId: "REPLACE_WITH_ACTUAL_FILE_ID_6", // 20241102_125604.jpg
-    title: "Photo 6",
-    description: "Collaborative problem solving session",
-    category: "Activities",
+    fileId: "17IDSAX4-dGliEtzaVo90NVozXsJIV2Vr",
+    title: "Mathematical Excellence",
+    description: "Students solving complex mathematical challenges with enthusiasm",
+    category: "Mathematics",
     filename: "20241102_125604.jpg",
   },
   {
     id: 7,
-    fileId: "REPLACE_WITH_ACTUAL_FILE_ID_7", // 20241102_125855.jpg
-    title: "Photo 7",
-    description: "Hands-on learning and discovery",
-    category: "Activities",
+    fileId: "1aLPfwvTxT7JPWOqGGayfQNbrbKx-Kdqv",
+    title: "Physics Exploration",
+    description: "Exploring the fascinating world of physics and natural phenomena",
+    category: "Physics",
     filename: "20241102_125855.jpg",
   },
   {
     id: 8,
-    fileId: "REPLACE_WITH_ACTUAL_FILE_ID_8", // 20241102_130558.jpg
-    title: "Photo 8",
-    description: "Students presenting their solutions",
-    category: "Presentation",
+    fileId: "18UVjH3FPtXhGhWNAo5ULU4E2yN0GuBa4",
+    title: "Collaborative Learning",
+    description: "Students building friendships through collaborative learning experiences",
+    category: "Activities",
     filename: "20241102_130558.jpg",
   },
   {
     id: 9,
-    fileId: "REPLACE_WITH_ACTUAL_FILE_ID_9", // 20241102_130641.jpg
-    title: "Photo 9",
-    description: "Award ceremony and recognition",
-    category: "Awards",
+    fileId: "1g8UoZc4qc36KVKvKr4ZtogWwDJXTIfxA",
+    title: "Innovation Showcase",
+    description: "Students presenting their innovative projects and solutions",
+    category: "Innovation",
     filename: "20241102_130641.jpg",
   },
   {
     id: 10,
-    fileId: "REPLACE_WITH_ACTUAL_FILE_ID_10", // 20241102_130647(0).jpg
-    title: "Photo 10",
-    description: "Celebrating achievements and future aspirations",
+    fileId: "1mv0GjzyXtwNBTToQ3nmzY8zvop9Siz6t",
+    title: "Victory Celebration",
+    description: "Celebrating achievements and future aspirations of young scientists",
     category: "Ceremony",
     filename: "20241102_130647(0).jpg",
   },
 ]
 
-// Helper function to get image URL with fallback
+// Update the getImageUrl function to use multiple fallback methods
 export function getImageUrl(photo: GoogleDriveImage, useThumbnail = false): string {
-  if (photo.fileId.startsWith("REPLACE_WITH_ACTUAL")) {
-    // Return placeholder if file ID not set
-    return `/placeholder.svg?height=400&width=600&text=${encodeURIComponent(photo.title)}`
+  if (useThumbnail) {
+    // Try thumbnail first for better performance
+    return `https://lh3.googleusercontent.com/d/${photo.fileId}=w800-h600-rw`
+  } else {
+    // Use direct download URL for full resolution
+    return `https://drive.google.com/uc?export=download&id=${photo.fileId}`
   }
+}
 
-  return useThumbnail ? getThumbnailUrl(photo.fileId) : getDirectImageUrl(photo.fileId)
+// Alternative URL formats for better compatibility
+export function getAlternativeImageUrl(fileId: string): string {
+  return `https://lh3.googleusercontent.com/d/${fileId}=w1200-h800-rw`
+}
+
+// Convert Google Drive share links to direct image URLs (for backward compatibility)
+export function convertGoogleDriveUrl(shareUrl: string): string {
+  const fileIdMatch = shareUrl.match(/\/d\/([a-zA-Z0-9-_]+)/)
+  if (fileIdMatch) {
+    const fileId = fileIdMatch[1]
+    return `https://drive.google.com/uc?export=view&id=${fileId}`
+  }
+  return shareUrl
 }
