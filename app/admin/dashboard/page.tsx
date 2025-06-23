@@ -13,7 +13,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { ThemeToggle } from "@/components/theme-toggle"
 import {
   getAllStudents,
-  updatePaymentStatus,
+  verifyPayment,
   adminLogout,
   getAdminSession,
   getAdminStats,
@@ -22,7 +22,19 @@ import {
   getAdmitCardSetting,
   updateAdmitCardSetting,
 } from "@/lib/actions"
-import { Users, CreditCard, Clock, LogOut, Search, CheckCircle, XCircle, Trash2, UserPlus } from "lucide-react"
+import {
+  Users,
+  Clock,
+  LogOut,
+  Search,
+  CheckCircle,
+  XCircle,
+  Trash2,
+  UserPlus,
+  BookOpen,
+  Eye,
+  AlertTriangle,
+} from "lucide-react"
 import { IMAGES } from "@/lib/image-paths"
 import { SCHOOL_CODES } from "@/lib/registration"
 import {
@@ -45,6 +57,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -57,6 +70,9 @@ interface Student {
   registrationNumber: string
   registrationDate: string
   paymentStatus: string
+  paymentVerified: boolean
+  paymentNumber?: string
+  paymentTransactionId?: string
   fatherMobile: string
   photoUrl?: string
   school: string
@@ -64,7 +80,8 @@ interface Student {
 
 interface Stats {
   totalRegistered: number
-  totalPaid: number
+  totalVerified: number
+  totalSubmitted: number
   totalPending: number
 }
 
@@ -76,12 +93,14 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<Stats>({
     totalRegistered: 0,
-    totalPaid: 0,
+    totalVerified: 0,
+    totalSubmitted: 0,
     totalPending: 0,
   })
   const [filter, setFilter] = useState("all")
   const [searchTerm, setSearchTerm] = useState("")
   const [adminName, setAdminName] = useState("")
+  const [adminUsername, setAdminUsername] = useState("")
   const [studentToDelete, setStudentToDelete] = useState<string | null>(null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -110,6 +129,7 @@ export default function AdminDashboard() {
       const session = await getAdminSession()
       if (session.success && session.loggedIn) {
         setAdminName(session.admin?.name || "Admin")
+        setAdminUsername(session.admin?.username || "")
       } else {
         router.push("/admin/login")
       }
@@ -156,8 +176,10 @@ export default function AdminDashboard() {
     let result = [...students]
 
     // Filter by payment status
-    if (filter === "paid") {
-      result = result.filter((student) => student.paymentStatus === "paid")
+    if (filter === "verified") {
+      result = result.filter((student) => student.paymentVerified === true)
+    } else if (filter === "submitted") {
+      result = result.filter((student) => student.paymentStatus === "submitted" && !student.paymentVerified)
     } else if (filter === "pending") {
       result = result.filter((student) => student.paymentStatus === "pending")
     }
@@ -176,38 +198,46 @@ export default function AdminDashboard() {
     setFilteredStudents(result)
   }, [filter, searchTerm, students])
 
-  const handlePaymentStatusChange = async (studentId: string, status: string) => {
+  const handlePaymentVerification = async (studentId: string, verified: boolean) => {
     try {
-      const result = await updatePaymentStatus(studentId, status)
+      const result = await verifyPayment(studentId, verified, adminUsername)
 
       if (result.success) {
         // Update the local state
         setStudents((prevStudents) =>
-          prevStudents.map((student) => (student.id === studentId ? { ...student, paymentStatus: status } : student)),
+          prevStudents.map((student) =>
+            student.id === studentId
+              ? {
+                  ...student,
+                  paymentVerified: verified,
+                  paymentStatus: verified ? "verified" : "submitted",
+                }
+              : student,
+          ),
         )
 
         // Update stats
         const newStats = { ...stats }
-        if (status === "paid") {
-          newStats.totalPaid += 1
-          newStats.totalPending -= 1
+        if (verified) {
+          newStats.totalVerified += 1
+          newStats.totalSubmitted -= 1
         } else {
-          newStats.totalPaid -= 1
-          newStats.totalPending += 1
+          newStats.totalVerified -= 1
+          newStats.totalSubmitted += 1
         }
         setStats(newStats)
 
         toast({
           title: "Success",
-          description: `Payment status updated to ${status}`,
+          description: result.message,
         })
       } else {
-        throw new Error(result.error || "Failed to update payment status")
+        throw new Error(result.error || "Failed to verify payment")
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update payment status",
+        description: error instanceof Error ? error.message : "Failed to verify payment",
         variant: "destructive",
       })
     }
@@ -225,8 +255,10 @@ export default function AdminDashboard() {
         const deletedStudent = students.find((student) => student.id === id)
         const newStats = { ...stats }
         newStats.totalRegistered -= 1
-        if (deletedStudent?.paymentStatus === "paid") {
-          newStats.totalPaid -= 1
+        if (deletedStudent?.paymentVerified) {
+          newStats.totalVerified -= 1
+        } else if (deletedStudent?.paymentStatus === "submitted") {
+          newStats.totalSubmitted -= 1
         } else {
           newStats.totalPending -= 1
         }
@@ -376,6 +408,71 @@ export default function AdminDashboard() {
     }
   }
 
+  const PaymentDetailsPopover = ({ student }: { student: Student }) => (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8 w-8 p-0 border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/30"
+        >
+          <BookOpen className="h-3.5 w-3.5" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80">
+        <div className="space-y-3">
+          <h4 className="font-semibold text-sm">Payment Details</h4>
+          <div className="space-y-2 text-sm">
+            <div>
+              <span className="font-medium text-gray-600 dark:text-gray-400">bKash Number:</span>
+              <p className="text-gray-900 dark:text-gray-100">{student.paymentNumber || "Not provided"}</p>
+            </div>
+            <div>
+              <span className="font-medium text-gray-600 dark:text-gray-400">Transaction ID:</span>
+              <p className="text-gray-900 dark:text-gray-100">{student.paymentTransactionId || "Not provided"}</p>
+            </div>
+            <div>
+              <span className="font-medium text-gray-600 dark:text-gray-400">Status:</span>
+              <Badge
+                variant={student.paymentVerified ? "default" : "secondary"}
+                className={
+                  student.paymentVerified
+                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                    : student.paymentStatus === "submitted"
+                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                      : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+                }
+              >
+                {student.paymentVerified ? "Verified" : student.paymentStatus === "submitted" ? "Submitted" : "Pending"}
+              </Badge>
+            </div>
+          </div>
+          {student.paymentStatus === "submitted" && !student.paymentVerified && (
+            <div className="flex gap-2 pt-2 border-t">
+              <Button
+                size="sm"
+                onClick={() => handlePaymentVerification(student.id, true)}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              >
+                <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                Verify
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handlePaymentVerification(student.id, false)}
+                className="flex-1 border-red-200 text-red-700 hover:bg-red-50"
+              >
+                <XCircle className="h-3.5 w-3.5 mr-1" />
+                Reject
+              </Button>
+            </div>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
@@ -424,7 +521,7 @@ export default function AdminDashboard() {
 
       <main className="container mx-auto px-4 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="border-emerald-200 dark:border-emerald-700 dark:bg-gray-800">
             <CardContent className="p-6 flex items-center">
               <div className="bg-emerald-100 dark:bg-emerald-900/30 p-4 rounded-full mr-4">
@@ -440,11 +537,11 @@ export default function AdminDashboard() {
           <Card className="border-emerald-200 dark:border-emerald-700 dark:bg-gray-800">
             <CardContent className="p-6 flex items-center">
               <div className="bg-green-100 dark:bg-green-900/30 p-4 rounded-full mr-4">
-                <CreditCard className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">Payment Completed</p>
-                <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{stats.totalPaid}</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Payment Verified</p>
+                <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{stats.totalVerified}</h3>
               </div>
             </CardContent>
           </Card>
@@ -452,7 +549,19 @@ export default function AdminDashboard() {
           <Card className="border-emerald-200 dark:border-emerald-700 dark:bg-gray-800">
             <CardContent className="p-6 flex items-center">
               <div className="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-full mr-4">
-                <Clock className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                <AlertTriangle className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+              </div>
+              <div>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Payment Submitted</p>
+                <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{stats.totalSubmitted}</h3>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-emerald-200 dark:border-emerald-700 dark:bg-gray-800">
+            <CardContent className="p-6 flex items-center">
+              <div className="bg-gray-100 dark:bg-gray-900/30 p-4 rounded-full mr-4">
+                <Clock className="h-6 w-6 text-gray-600 dark:text-gray-400" />
               </div>
               <div>
                 <p className="text-gray-500 dark:text-gray-400 text-sm">Payment Pending</p>
@@ -486,7 +595,8 @@ export default function AdminDashboard() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Students</SelectItem>
-                    <SelectItem value="paid">Payment Completed</SelectItem>
+                    <SelectItem value="verified">Payment Verified</SelectItem>
+                    <SelectItem value="submitted">Payment Submitted</SelectItem>
                     <SelectItem value="pending">Payment Pending</SelectItem>
                   </SelectContent>
                 </Select>
@@ -723,6 +833,7 @@ export default function AdminDashboard() {
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
+
                 <Button
                   onClick={handleAdmitCardToggle}
                   className={`${
@@ -783,19 +894,27 @@ export default function AdminDashboard() {
                         <TableCell>{student.fatherMobile}</TableCell>
                         <TableCell>
                           <Badge
-                            variant={student.paymentStatus === "paid" ? "default" : "secondary"}
+                            variant={student.paymentVerified ? "default" : "secondary"}
                             className={
-                              student.paymentStatus === "paid"
+                              student.paymentVerified
                                 ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                                : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                                : student.paymentStatus === "submitted"
+                                  ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                                  : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
                             }
                           >
-                            {student.paymentStatus === "paid" ? (
+                            {student.paymentVerified ? (
                               <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                            ) : student.paymentStatus === "submitted" ? (
+                              <AlertTriangle className="h-3.5 w-3.5 mr-1" />
                             ) : (
                               <Clock className="h-3.5 w-3.5 mr-1" />
                             )}
-                            {student.paymentStatus === "paid" ? "Paid" : "Pending"}
+                            {student.paymentVerified
+                              ? "Verified"
+                              : student.paymentStatus === "submitted"
+                                ? "Submitted"
+                                : "Pending"}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -806,30 +925,11 @@ export default function AdminDashboard() {
                               className="h-8 border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-900/30"
                               onClick={() => router.push(`/student/${student.id}`)}
                             >
+                              <Eye className="h-3.5 w-3.5 mr-1" />
                               View
                             </Button>
 
-                            {student.paymentStatus === "pending" ? (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-8 border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/30"
-                                onClick={() => handlePaymentStatusChange(student.id, "paid")}
-                              >
-                                <CheckCircle className="h-3.5 w-3.5 mr-1" />
-                                Mark Paid
-                              </Button>
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-8 border-yellow-200 text-yellow-700 hover:bg-yellow-50 dark:border-yellow-800 dark:text-yellow-400 dark:hover:bg-yellow-900/30"
-                                onClick={() => handlePaymentStatusChange(student.id, "pending")}
-                              >
-                                <XCircle className="h-3.5 w-3.5 mr-1" />
-                                Mark Pending
-                              </Button>
-                            )}
+                            <PaymentDetailsPopover student={student} />
 
                             <AlertDialog
                               open={studentToDelete === student.id}

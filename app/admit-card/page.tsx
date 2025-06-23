@@ -1,254 +1,176 @@
 "use client"
 
-import { useState } from "react"
-import Link from "next/link"
+import type React from "react"
+
+import { useState, type KeyboardEvent } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { Search, Printer, AlertCircle } from "lucide-react"
-import { MobileNav } from "@/components/mobile-nav"
-import { IMAGES } from "@/lib/image-paths"
 import { MainNav } from "@/components/main-nav"
+import { MobileNav } from "@/components/mobile-nav"
 import { getStudentByRegistrationNumber } from "@/lib/actions"
-import { parseRegistrationNumber, getOlympiadRoll } from "@/lib/registration"
+import { IMAGES } from "@/lib/image-paths"
+import {
+  Search,
+  Download,
+  CheckCircle,
+  AlertTriangle,
+  Clock,
+  User,
+  Calendar,
+  Phone,
+  GraduationCap,
+  Building2,
+  BookOpen,
+} from "lucide-react"
 
-interface StudentData {
+interface Student {
   id: string
-  registrationNumber: string
   fullName: string
   fatherName: string
+  motherName: string
   class: string
   olympiadType: string
   school: string
+  registrationNumber: string
+  registrationDate: string
+  paymentStatus: "pending" | "submitted" | "paid"
+  paymentVerified: boolean
+  photoUrl?: string
   fatherMobile: string
+  address: string
   gender: string
-  photoUrl: string
-  paymentStatus: string
+  dateOfBirth: string
 }
 
 export default function AdmitCardPage() {
   const { toast } = useToast()
+
   const [registrationNumber, setRegistrationNumber] = useState("")
-  const [student, setStudent] = useState<StudentData | null>(null)
+  const [student, setStudent] = useState<Student | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [searched, setSearched] = useState(false)
+
+  /* ---------- helpers ---------- */
+
+  const getStatusIcon = (s: Student) => {
+    if (s.paymentVerified) return <CheckCircle className="h-5 w-5 text-green-500" />
+    if (s.paymentStatus === "submitted") return <AlertTriangle className="h-5 w-5 text-yellow-500" />
+    return <Clock className="h-5 w-5 text-gray-500" />
+  }
+
+  const getStatusText = (s: Student) => {
+    if (s.paymentVerified) return "Payment Verified – Admit Card Available"
+    if (s.paymentStatus === "submitted") return "Payment Submitted – Awaiting Verification"
+    return "Payment Pending"
+  }
+
+  const getStatusColor = (s: Student) => {
+    if (s.paymentVerified) return "text-green-600 dark:text-green-400"
+    if (s.paymentStatus === "submitted") return "text-yellow-600 dark:text-yellow-400"
+    return "text-gray-600 dark:text-gray-400"
+  }
+
+  /* ---------- actions ---------- */
 
   const handleSearch = async () => {
     if (!registrationNumber.trim()) {
       toast({
-        title: "Error",
-        description: "Please enter a registration number",
+        title: "Missing registration number",
+        description: "Please enter a registration number.",
         variant: "destructive",
       })
       return
     }
 
     setLoading(true)
-    setError(null)
+    setSearched(true)
 
     try {
       const result = await getStudentByRegistrationNumber(registrationNumber.trim())
-
       if (result.success && result.student) {
-        // Check if payment is completed
-        if (result.student.paymentStatus !== "paid") {
-          setError("Payment not completed. Please complete your payment to download the admit card.")
-          setStudent(null)
-          return
-        }
+        setStudent(result.student)
 
-        setStudent({
-          id: result.student.id,
-          registrationNumber: result.student.registrationNumber,
-          fullName: result.student.fullName,
-          fatherName: result.student.fatherName,
-          class: result.student.class,
-          olympiadType: result.student.olympiadType,
-          school: result.student.school,
-          fatherMobile: result.student.fatherMobile,
-          gender: result.student.gender,
-          photoUrl: result.student.photoUrl,
-          paymentStatus: result.student.paymentStatus,
-        })
-        setError(null)
+        if (!result.student.paymentVerified) {
+          toast({
+            title: "Payment not verified",
+            description:
+              "Your payment is still under review. You’ll be able to download the admit card once it’s approved.",
+            variant: "destructive",
+          })
+        }
       } else {
-        setError(result.error || "Student not found. Please check your registration number.")
         setStudent(null)
+        toast({
+          title: "Student not found",
+          description: "No record matched that registration number.",
+          variant: "destructive",
+        })
       }
-    } catch (error) {
-      console.error("Error fetching student:", error)
-      setError("An error occurred while searching. Please try again.")
-      setStudent(null)
+    } catch (err) {
+      console.error(err)
+      toast({
+        title: "Search error",
+        description: "Something went wrong. Please try again later.",
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
   }
 
-  const handlePrint = () => {
-    window.print()
+  const handleDownload = () => {
+    if (!student) return
+    if (!student.paymentVerified) {
+      toast({
+        title: "Download blocked",
+        description: "Admit card will be available after payment verification.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    /* simple HTML file download so users can print */
+    const html = `
+      <html>
+      <head><title>Admit Card – ${student.fullName}</title></head>
+      <body>
+        <h2>Admit Card</h2>
+        <p>Name: ${student.fullName}</p>
+        <p>Reg:  ${student.registrationNumber}</p>
+        <!-- add more fields as needed -->
+      </body>
+      </html>
+    `
+
+    const blob = new Blob([html], { type: "text/html" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `admit-card-${student.registrationNumber}.html`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
   }
 
-  const generateAdmitCardHTML = (studentData: StudentData) => {
-    const parsedRegNumber = parseRegistrationNumber(studentData.registrationNumber)
-    const olympiadRoll = getOlympiadRoll(studentData.registrationNumber)
-
-    return (
-      <div className="admit-card-print bg-white p-8 max-w-4xl mx-auto border-2 border-emerald-600 rounded-lg">
-        <div className="header bg-emerald-600 text-white p-6 text-center rounded-t-lg -mx-8 -mt-8 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="text-left">
-              <h1 className="text-2xl md:text-3xl font-bold">SAVAR SCIENCE SOCIETY</h1>
-              <h2 className="text-xl md:text-2xl font-bold mt-2">MATH & SCIENCE OLYMPIAD 2025</h2>
-              <h3 className="text-lg font-bold mt-2 text-yellow-300">ADMIT CARD</h3>
-            </div>
-            <div>
-              <Image
-                src={IMAGES.LOGO || "/placeholder.svg"}
-                alt="Savar Science Society Logo"
-                width={80}
-                height={80}
-                className="rounded-full"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="content grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="info-section md:col-span-2">
-            <h3 className="text-lg font-bold text-emerald-600 border-b border-emerald-600 pb-2 mb-4">
-              Student Information
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div className="info-row">
-                <span className="font-bold text-gray-700">Registration No:</span>
-                <span className="ml-2 text-gray-900">{studentData.registrationNumber}</span>
-              </div>
-              <div className="info-row">
-                <span className="font-bold text-gray-700">Olympiad Roll:</span>
-                <span className="ml-2 text-gray-900">{olympiadRoll}</span>
-              </div>
-              <div className="info-row">
-                <span className="font-bold text-gray-700">Name:</span>
-                <span className="ml-2 text-gray-900">{studentData.fullName}</span>
-              </div>
-              <div className="info-row">
-                <span className="font-bold text-gray-700">Father's Name:</span>
-                <span className="ml-2 text-gray-900">{studentData.fatherName}</span>
-              </div>
-              <div className="info-row">
-                <span className="font-bold text-gray-700">Class:</span>
-                <span className="ml-2 text-gray-900">{studentData.class}</span>
-              </div>
-              <div className="info-row">
-                <span className="font-bold text-gray-700">Subject:</span>
-                <span className="ml-2 text-gray-900">{studentData.olympiadType}</span>
-              </div>
-              <div className="info-row md:col-span-2">
-                <span className="font-bold text-gray-700">Institute:</span>
-                <span className="ml-2 text-gray-900">{studentData.school}</span>
-              </div>
-              <div className="info-row">
-                <span className="font-bold text-gray-700">Center:</span>
-                <span className="ml-2 text-gray-900">Savar Model College</span>
-              </div>
-              <div className="info-row">
-                <span className="font-bold text-gray-700">Shift:</span>
-                <span className="ml-2 text-gray-900">Morning</span>
-              </div>
-              <div className="info-row">
-                <span className="font-bold text-gray-700">Time:</span>
-                <span className="ml-2 text-gray-900">10:00 AM - 12:00 PM</span>
-              </div>
-              <div className="info-row">
-                <span className="font-bold text-gray-700">Mobile:</span>
-                <span className="ml-2 text-gray-900">{studentData.fatherMobile}</span>
-              </div>
-              <div className="info-row">
-                <span className="font-bold text-gray-700">Gender:</span>
-                <span className="ml-2 text-gray-900 capitalize">{studentData.gender}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="photo-section text-center">
-            <div className="w-32 h-40 border-2 border-gray-300 mx-auto mb-2 overflow-hidden">
-              <Image
-                src={studentData.photoUrl || "/placeholder.svg?height=160&width=128"}
-                alt="Student Photo"
-                width={128}
-                height={160}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="text-xs text-gray-600">Student Photo</div>
-          </div>
-        </div>
-
-        <div className="exam-info bg-yellow-100 p-4 rounded-lg mt-6 text-center">
-          <div className="text-red-600 font-bold text-lg">EXAM DATE: 26 JULY 2025</div>
-          <div className="text-emerald-600 mt-2">Please bring this admit card on the exam day</div>
-        </div>
-
-        <div className="instructions bg-gray-50 p-4 rounded-lg mt-6">
-          <h4 className="font-bold text-emerald-600 mb-2">Instructions:</h4>
-          <ul className="text-sm text-gray-700 space-y-1">
-            <li>• Bring this admit card on the exam day</li>
-            <li>• Arrive at the exam center 30 minutes before the exam</li>
-            <li>• Bring necessary stationery (pen, pencil, eraser, etc.)</li>
-            <li>• Mobile phones are not allowed in the exam hall</li>
-            <li>• Follow all exam rules and regulations</li>
-          </ul>
-        </div>
-
-        <div className="footer text-center mt-6 text-sm text-gray-600">
-          <p>© 2025 Savar Science Society. All rights reserved.</p>
-        </div>
-      </div>
-    )
-  }
+  /* ---------- JSX ---------- */
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
-      <style jsx global>{`
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          .admit-card-print,
-          .admit-card-print * {
-            visibility: visible;
-          }
-          .admit-card-print {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-          }
-          .no-print {
-            display: none !important;
-          }
-        }
-      `}</style>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-emerald-900">
+      {/* ---------- header ---------- */}
+      <header className="bg-emerald-600 dark:bg-emerald-700 text-white">
+        <div className="container mx-auto flex items-center justify-between px-4 py-4">
+          <Link href="/" className="flex items-center gap-3">
+            <Image src={IMAGES.LOGO || "/placeholder.svg"} alt="Logo" width={48} height={48} className="rounded-full" />
+            <span className="text-lg font-bold">Savar Science Society</span>
+          </Link>
 
-      <header className="bg-emerald-600 dark:bg-emerald-700 text-white py-4 border-b border-emerald-700 dark:border-emerald-800 no-print">
-        <div className="container mx-auto px-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-              <Image
-                src={IMAGES.LOGO || "/placeholder.svg"}
-                alt="Savar Science Society Logo"
-                width={50}
-                height={50}
-                className="rounded-full"
-              />
-              <h1 className="text-xl font-bold">Savar Science Society</h1>
-            </Link>
-          </div>
           <div className="flex items-center gap-4">
             <MainNav />
             <ThemeToggle />
@@ -257,97 +179,180 @@ export default function AdmitCardPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-12">
-        {!student ? (
-          <Card className="max-w-md mx-auto border-emerald-200 dark:border-emerald-700 dark:bg-gray-800 no-print">
-            <CardHeader className="bg-emerald-600 dark:bg-emerald-700 text-white p-6 text-center">
-              <h1 className="text-2xl font-bold">Download Admit Card</h1>
-              <p className="text-emerald-100 mt-2">Enter your registration number to download your admit card</p>
-            </CardHeader>
-
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="registrationNumber" className="text-gray-700 dark:text-gray-300">
-                    Registration Number
-                  </Label>
-                  <Input
-                    id="registrationNumber"
-                    type="text"
-                    placeholder="Enter your 10-digit registration number"
-                    value={registrationNumber}
-                    onChange={(e) => setRegistrationNumber(e.target.value)}
-                    className="border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-                    onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                  />
-                </div>
-
-                {error && (
-                  <div className="flex items-center p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-md">
-                    <AlertCircle className="h-4 w-4 text-red-500 mr-2" />
-                    <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
-                  </div>
-                )}
-
-                <Button
-                  onClick={handleSearch}
-                  disabled={loading}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600"
-                >
-                  {loading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-                      Searching...
-                    </>
-                  ) : (
-                    <>
-                      <Search className="h-4 w-4 mr-2" />
-                      Search Student
-                    </>
-                  )}
-                </Button>
+      {/* ---------- main ---------- */}
+      <main className="container mx-auto px-4 py-12 max-w-4xl">
+        {/* search card */}
+        <Card className="mb-8 border-0 shadow-lg backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
+          <CardHeader className="rounded-t-lg bg-gradient-to-r from-emerald-500 to-blue-500 text-white text-center">
+            <h1 className="text-2xl font-bold">Download Admit Card</h1>
+            <p className="text-emerald-100">Enter your registration number</p>
+          </CardHeader>
+          <CardContent className="p-8">
+            <div className="flex flex-col gap-4 md:flex-row">
+              <div className="flex-1">
+                <Label htmlFor="reg" className="mb-1 block">
+                  Registration Number
+                </Label>
+                <Input
+                  id="reg"
+                  placeholder="e.g. 3082025080001"
+                  value={registrationNumber}
+                  onChange={(e) => setRegistrationNumber(e.target.value)}
+                  onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && handleSearch()}
+                />
               </div>
-
-              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-md">
-                <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">Important Notes:</h3>
-                <ul className="text-sm text-blue-700 dark:text-blue-400 space-y-1">
-                  <li>• Payment must be completed to download admit card</li>
-                  <li>• Registration number is 10 digits long</li>
-                  <li>• Contact support if you face any issues</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <div>
-            <div className="flex justify-center gap-4 mb-6 no-print">
-              <Button onClick={handlePrint} className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                <Printer className="h-4 w-4 mr-2" />
-                Print Admit Card
-              </Button>
               <Button
-                onClick={() => {
-                  setStudent(null)
-                  setRegistrationNumber("")
-                  setError(null)
-                }}
-                variant="outline"
-                className="border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+                onClick={handleSearch}
+                disabled={loading}
+                className="h-10 bg-emerald-600 hover:bg-emerald-700 text-white mt-2 md:mt-0 md:self-end"
               >
-                Search Another
+                {loading ? (
+                  <>
+                    <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-b-0 border-white" />
+                    Searching…
+                  </>
+                ) : (
+                  <>
+                    <Search className="mr-2 h-4 w-4" /> Search
+                  </>
+                )}
               </Button>
             </div>
+          </CardContent>
+        </Card>
 
-            {generateAdmitCardHTML(student)}
-          </div>
+        {/* results */}
+        {searched && (
+          <Card className="border-0 shadow-lg backdrop-blur-sm bg-white/80 dark:bg-gray-800/80">
+            <CardContent className="p-8">
+              {student ? (
+                <>
+                  {/* top row */}
+                  <div className="flex flex-col gap-6 md:flex-row">
+                    {/* photo */}
+                    <div className="w-32 flex-shrink-0 overflow-hidden rounded-lg border-2 border-gray-300 dark:border-gray-600">
+                      {student.photoUrl ? (
+                        <Image
+                          src={student.photoUrl || "/placeholder.svg"}
+                          alt={student.fullName}
+                          width={128}
+                          height={160}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-40 items-center justify-center bg-gray-100 text-gray-400 dark:bg-gray-700">
+                          <User className="h-12 w-12" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* info */}
+                    <div className="flex flex-1 flex-col gap-4">
+                      <div>
+                        <h2 className="mb-1 text-2xl font-bold text-gray-900 dark:text-white">{student.fullName}</h2>
+                        <p className="text-gray-600 dark:text-gray-300">Registration: {student.registrationNumber}</p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(student)}
+                        <span className={`font-medium ${getStatusColor(student)}`}>{getStatusText(student)}</span>
+                      </div>
+
+                      {student.paymentVerified && (
+                        <Button onClick={handleDownload} className="w-fit bg-green-600 hover:bg-green-700 text-white">
+                          <Download className="mr-2 h-4 w-4" />
+                          Download Admit Card
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* detailed grid */}
+                  <div className="mt-8 grid gap-6 border-t pt-6 md:grid-cols-2">
+                    {/* column 1 */}
+                    <div className="space-y-4">
+                      <Detail
+                        icon={<User className="h-5 w-5 text-emerald-500" />}
+                        label="Father's Name"
+                        value={student.fatherName}
+                      />
+                      <Detail
+                        icon={<User className="h-5 w-5 text-emerald-500" />}
+                        label="Mother's Name"
+                        value={student.motherName}
+                      />
+                      <Detail
+                        icon={<Phone className="h-5 w-5 text-emerald-500" />}
+                        label="Contact"
+                        value={student.fatherMobile}
+                      />
+                      <Detail
+                        icon={<Calendar className="h-5 w-5 text-emerald-500" />}
+                        label="Date of Birth"
+                        value={student.dateOfBirth}
+                      />
+                    </div>
+
+                    {/* column 2 */}
+                    <div className="space-y-4">
+                      <Detail
+                        icon={<GraduationCap className="h-5 w-5 text-emerald-500" />}
+                        label="Class"
+                        value={student.class}
+                      />
+                      <Detail
+                        icon={<BookOpen className="h-5 w-5 text-emerald-500" />}
+                        label="Subject"
+                        value={student.olympiadType}
+                      />
+                      <Detail
+                        icon={<Building2 className="h-5 w-5 text-emerald-500" />}
+                        label="School"
+                        value={student.school}
+                      />
+                      <Detail
+                        icon={<Clock className="h-5 w-5 text-emerald-500" />}
+                        label="Registered On"
+                        value={new Date(student.registrationDate).toLocaleDateString()}
+                      />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center text-lg text-gray-700 dark:text-gray-300">
+                  No student found for that registration number.
+                </div>
+              )}
+            </CardContent>
+          </Card>
         )}
       </main>
 
-      <footer className="bg-emerald-600 dark:bg-emerald-700 text-white py-8 border-t border-emerald-700 dark:border-emerald-800 mt-12 no-print">
-        <div className="container mx-auto px-4 text-center">
-          <p>© 2025 Savar Science Society. All rights reserved.</p>
-        </div>
+      {/* simple footer */}
+      <footer className="bg-emerald-600 dark:bg-emerald-700 py-6 text-center text-white">
+        © 2025 Savar Science Society
       </footer>
+    </div>
+  )
+}
+
+/* ------------- reusable row ------------- */
+function Detail({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode
+  label: string
+  value: string | number
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      {icon}
+      <div>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+        <p className="font-medium text-gray-800 dark:text-white">{value}</p>
+      </div>
     </div>
   )
 }

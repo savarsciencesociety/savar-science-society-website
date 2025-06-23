@@ -15,7 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/components/ui/use-toast"
 import { registerStudent } from "@/lib/actions"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { Phone, AlertCircle, Loader2, CheckCircle, ChevronDown } from "lucide-react"
+import { Phone, AlertCircle, Loader2, CheckCircle, ChevronDown, CreditCard } from "lucide-react"
 import { validateImageDimensions } from "@/lib/image-utils"
 import { MobileNav } from "@/components/mobile-nav"
 import { IMAGES, SOCIAL_LINKS } from "@/lib/image-paths"
@@ -38,6 +38,7 @@ export default function RegisterPage() {
   const [studentId, setStudentId] = useState("")
   const [schoolSearch, setSchoolSearch] = useState("")
   const [showSchoolDropdown, setShowSchoolDropdown] = useState(false)
+  const [showPaymentSection, setShowPaymentSection] = useState(false)
   const photoInputRef = useRef<HTMLInputElement>(null)
   const signatureInputRef = useRef<HTMLFormElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
@@ -59,6 +60,8 @@ export default function RegisterPage() {
     scholarshipDetails: "",
     photo: null as File | null,
     signature: null as File | null,
+    paymentNumber: "",
+    paymentTransactionId: "",
   })
 
   // Filter schools based on search
@@ -81,8 +84,12 @@ export default function RegisterPage() {
     if (!formData.gender) errors.gender = "Please select a gender"
     if (!formData.dateOfBirth) errors.dateOfBirth = "Date of birth is required"
     if (!formData.dreamUniversity) errors.dreamUniversity = "Please select a dream university"
-    // Photo is optional
-    // Signature is optional
+
+    // Payment validation when payment section is shown
+    if (showPaymentSection) {
+      if (!formData.paymentNumber) errors.paymentNumber = "bKash payment number is required"
+      if (!formData.paymentTransactionId) errors.paymentTransactionId = "Transaction ID is required"
+    }
 
     setFormErrors(errors)
     return Object.keys(errors).length === 0
@@ -96,22 +103,19 @@ export default function RegisterPage() {
     setFormErrors((prev) => ({ ...prev, school: undefined }))
   }
 
-  // Update the handlePhotoChange function
+  // Handle photo change
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0]
 
-      // Reset errors
       setPhotoError(null)
       setPhotoWarning(null)
       setFormErrors((prev) => ({ ...prev, photo: undefined }))
 
-      // Validate image dimensions
       const validation = await validateImageDimensions(file, 600, 600, 5)
 
       if (!validation.valid) {
         setPhotoWarning(`Image should be 600x600 pixels. Current size: ${validation.width}x${validation.height}`)
-        // We'll allow the upload but show a warning
       }
 
       setFormData({ ...formData, photo: file })
@@ -126,21 +130,18 @@ export default function RegisterPage() {
     }
   }
 
-  // Update the handleSignatureChange function
+  // Handle signature change
   const handleSignatureChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0]
 
-      // Reset errors
       setSignatureError(null)
       setSignatureWarning(null)
 
-      // Validate signature dimensions
       const validation = await validateImageDimensions(file, 300, 80, 10)
 
       if (!validation.valid) {
         setSignatureWarning(`Signature should be 300x80 pixels. Current size: ${validation.width}x${validation.height}`)
-        // We'll allow the upload but show a warning
       }
 
       setFormData({ ...formData, signature: file })
@@ -155,15 +156,9 @@ export default function RegisterPage() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    console.log("=== FORM SUBMISSION DEBUG ===")
-    console.log("Current form data state:", formData)
-
-    // Validate the form
+  const handleCompleteRegistration = () => {
+    // Validate basic form first
     if (!validateForm()) {
-      console.error("Form validation failed")
       toast({
         title: "Form Validation Error",
         description: "Please fill in all required fields correctly.",
@@ -172,15 +167,27 @@ export default function RegisterPage() {
       return
     }
 
-    console.log("Form validation passed")
+    setShowPaymentSection(true)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!validateForm()) {
+      toast({
+        title: "Form Validation Error",
+        description: "Please fill in all required fields correctly.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
-      // Create form data for submission
       const formDataToSubmit = new FormData()
 
-      // Add all text fields with logging
-      console.log("Adding form fields...")
+      // Add all text fields
       formDataToSubmit.append("school", formData.school)
       formDataToSubmit.append("class", formData.class)
       formDataToSubmit.append("olympiadType", formData.olympiadType)
@@ -192,65 +199,43 @@ export default function RegisterPage() {
       formDataToSubmit.append("address", formData.address)
       formDataToSubmit.append("gender", formData.gender)
       formDataToSubmit.append("dateOfBirth", formData.dateOfBirth)
-      formDataToSubmit.append("educationalInstitute", formData.school) // Use school as educational institute
+      formDataToSubmit.append("educationalInstitute", formData.school)
       formDataToSubmit.append("dreamUniversity", formData.dreamUniversity)
       formDataToSubmit.append("previousScholarship", formData.previousScholarship)
       formDataToSubmit.append("scholarshipDetails", formData.scholarshipDetails || "")
+      formDataToSubmit.append("paymentNumber", formData.paymentNumber)
+      formDataToSubmit.append("paymentTransactionId", formData.paymentTransactionId)
 
       // Add files
       if (formData.photo) {
-        console.log("Adding photo file:", formData.photo.name, formData.photo.size)
         formDataToSubmit.append("photo", formData.photo)
-      } else {
-        console.log("No photo to add")
       }
 
       if (formData.signature) {
-        console.log("Adding signature file:", formData.signature.name, formData.signature.size)
         formDataToSubmit.append("signature", formData.signature)
-      } else {
-        console.log("No signature to add")
       }
 
-      // Log all form data entries
-      console.log("=== FORM DATA ENTRIES ===")
-      for (const [key, value] of formDataToSubmit.entries()) {
-        if (value instanceof File) {
-          console.log(`${key}: File(${value.name}, ${value.size} bytes)`)
-        } else {
-          console.log(`${key}: ${value}`)
-        }
-      }
-
-      console.log("Submitting form data to server...")
-      // Submit the form data
       const result = await registerStudent(formDataToSubmit)
-      console.log("Server response:", result)
 
       if (result.success) {
-        console.log("Registration successful!")
-        // Show success message with registration number
         setRegistrationSuccess(true)
         setRegistrationNumber(result.registrationNumber || "")
         setStudentId(result.studentId || "")
 
         toast({
-          title: "Registration Successful",
-          description: `Your registration has been submitted successfully. Your registration number is ${result.registrationNumber}`,
+          title: "Registration Submitted",
+          description: `Your registration has been submitted successfully. Registration number: ${result.registrationNumber}`,
         })
       } else {
-        console.error("Registration failed:", result.error)
         throw new Error(result.error || "Registration failed")
       }
     } catch (error) {
-      console.error("Registration error:", error)
       toast({
         title: "Registration Failed",
         description: error instanceof Error ? error.message : "An unexpected error occurred",
         variant: "destructive",
       })
     } finally {
-      console.log("Setting isSubmitting to false")
       setIsSubmitting(false)
     }
   }
@@ -285,7 +270,7 @@ export default function RegisterPage() {
           <Card className="max-w-2xl mx-auto border-0 shadow-lg">
             <CardHeader className="bg-emerald-600 dark:bg-emerald-700 p-4 flex flex-col items-center justify-center rounded-t-lg">
               <div className="text-center">
-                <h1 className="text-2xl md:text-3xl font-bold text-white">Registration Successful</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-white">Registration Submitted</h1>
               </div>
             </CardHeader>
 
@@ -298,12 +283,20 @@ export default function RegisterPage() {
                 <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Thank you for registering!</h2>
 
                 <p className="text-gray-600 dark:text-gray-300 mb-6">
-                  Your registration has been submitted successfully.
+                  Your registration has been submitted and is pending payment verification.
                 </p>
 
                 <div className="bg-emerald-50 dark:bg-emerald-900/30 p-4 rounded-lg border border-emerald-100 dark:border-emerald-800 mb-6 w-full">
                   <p className="text-gray-700 dark:text-gray-300 mb-2">Your Registration Number:</p>
                   <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{registrationNumber}</p>
+                </div>
+
+                <div className="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800 mb-6 w-full">
+                  <h3 className="font-semibold text-yellow-800 dark:text-yellow-300 mb-2">Payment Status:</h3>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-400">
+                    Your payment information has been submitted for verification. You will be able to download your
+                    admit card once the payment is verified by our admin team.
+                  </p>
                 </div>
 
                 <p className="text-gray-600 dark:text-gray-300 mb-6">
@@ -427,7 +420,6 @@ export default function RegisterPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <h4 className="text-lg font-semibold text-gray-800 dark:text-white">Class</h4>
-                  {/* Class checkboxes */}
                   <div className="grid grid-cols-6 gap-2">
                     {[5, 6, 7, 8, 9, 10].map((classNum) => (
                       <div key={classNum} className="flex items-center space-x-2">
@@ -448,7 +440,6 @@ export default function RegisterPage() {
                   {formErrors.class && <p className="text-red-500 text-xs mt-1">{formErrors.class}</p>}
                 </div>
 
-                {/* Update the olympiad section to show available subjects based on class */}
                 <div className="space-y-4">
                   <h4 className="text-lg font-semibold text-gray-800 dark:text-white">Olympiad</h4>
                   <div className="grid grid-cols-1 gap-2">
@@ -522,12 +513,6 @@ export default function RegisterPage() {
                     {photoWarning}
                   </div>
                 )}
-                {formErrors.photo && (
-                  <div className="flex items-center mt-1 text-red-500 text-xs">
-                    <AlertCircle className="h-3 w-3 mr-1" />
-                    {formErrors.photo}
-                  </div>
-                )}
               </div>
 
               {/* Personal Information */}
@@ -537,7 +522,6 @@ export default function RegisterPage() {
                 </h4>
 
                 <div className="space-y-4">
-                  {/* Update all form labels and inputs with dark mode classes */}
                   <div>
                     <Label htmlFor="fullName" className="text-gray-700 dark:text-gray-300">
                       Full Name:
@@ -829,6 +813,78 @@ export default function RegisterPage() {
                 </div>
               </div>
 
+              {/* Payment Section */}
+              {showPaymentSection && (
+                <div className="mt-8 p-6 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <h4 className="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-4 flex items-center">
+                    <CreditCard className="h-5 w-5 mr-2" />
+                    Payment Reference
+                  </h4>
+
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-blue-200 dark:border-blue-700 mb-4">
+                    <p className="text-gray-700 dark:text-gray-300 mb-2">
+                      Please send <span className="font-bold text-blue-600 dark:text-blue-400">150 BDT</span> to our
+                      bKash number:
+                      <span className="font-bold text-blue-600 dark:text-blue-400"> +880 1518-405600</span>
+                    </p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      Then enter your <span className="font-semibold">payment transaction ID and bKash Number</span>{" "}
+                      below for verification.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="paymentNumber" className="text-gray-700 dark:text-gray-300">
+                        bKash Payment Number *
+                      </Label>
+                      <Input
+                        id="paymentNumber"
+                        placeholder="Enter your bKash number used for payment"
+                        value={formData.paymentNumber}
+                        onChange={(e) => {
+                          setFormData({ ...formData, paymentNumber: e.target.value })
+                          setFormErrors((prev) => ({ ...prev, paymentNumber: undefined }))
+                        }}
+                        className={`border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 dark:bg-gray-700 ${
+                          formErrors.paymentNumber ? "border-red-500" : ""
+                        }`}
+                        required
+                      />
+                      {formErrors.paymentNumber && (
+                        <p className="text-red-500 text-xs mt-1">{formErrors.paymentNumber}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label htmlFor="paymentTransactionId" className="text-gray-700 dark:text-gray-300">
+                        Transaction ID *
+                      </Label>
+                      <Input
+                        id="paymentTransactionId"
+                        placeholder="Enter bKash transaction ID"
+                        value={formData.paymentTransactionId}
+                        onChange={(e) => {
+                          setFormData({ ...formData, paymentTransactionId: e.target.value })
+                          setFormErrors((prev) => ({ ...prev, paymentTransactionId: undefined }))
+                        }}
+                        className={`border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 dark:bg-gray-700 ${
+                          formErrors.paymentTransactionId ? "border-red-500" : ""
+                        }`}
+                        required
+                      />
+                      {formErrors.paymentTransactionId && (
+                        <p className="text-red-500 text-xs mt-1">{formErrors.paymentTransactionId}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <p className="text-blue-600 dark:text-blue-400 text-sm mt-3">
+                    This reference helps us verify your payment quickly and securely.
+                  </p>
+                </div>
+              )}
+
               {/* Exam Date */}
               <div className="mt-8">
                 <p className="text-red-500 font-bold text-center">EXAM DATE: 26 JULY 2025</p>
@@ -859,24 +915,34 @@ export default function RegisterPage() {
               </div>
 
               <div className="flex justify-center mt-8">
-                <Button
-                  type="submit"
-                  className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white px-8 py-2 text-lg rounded-md"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <div className="flex items-center">
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Submitting...
-                    </div>
-                  ) : (
-                    "Register"
-                  )}
-                </Button>
+                {!showPaymentSection ? (
+                  <Button
+                    type="button"
+                    onClick={handleCompleteRegistration}
+                    className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white px-8 py-2 text-lg rounded-md"
+                  >
+                    Complete Registration
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white px-8 py-2 text-lg rounded-md"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <div className="flex items-center">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Submitting...
+                      </div>
+                    ) : (
+                      "Submit Registration"
+                    )}
+                  </Button>
+                )}
               </div>
 
               <div className="text-center text-gray-500 dark:text-gray-400 text-sm">
-                <p>* Payment option will be available after registration</p>
+                <p>* Payment verification will be done by admin before admit card generation</p>
               </div>
             </form>
           </CardContent>

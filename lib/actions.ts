@@ -171,6 +171,8 @@ export async function registerStudent(formData: FormData) {
     const school = formData.get("school") as string
     const photo = formData.get("photo") as File | null
     const signature = formData.get("signature") as File | null
+    const paymentNumber = formData.get("paymentNumber") as string
+    const paymentTransactionId = formData.get("paymentTransactionId") as string
 
     console.log("=== EXTRACTED FORM DATA ===")
     console.log("School:", school)
@@ -188,20 +190,10 @@ export async function registerStudent(formData: FormData) {
     console.log("Dream University:", dreamUniversity)
     console.log("Previous Scholarship:", previousScholarship)
     console.log("Scholarship Details:", scholarshipDetails)
+    console.log("Payment Number:", paymentNumber)
+    console.log("Payment Transaction ID:", paymentTransactionId)
     console.log("Has Photo:", !!photo, "Size:", photo?.size || 0)
     console.log("Has Signature:", !!signature, "Size:", signature?.size || 0)
-
-    console.log("Form data extracted:", {
-      class: class_,
-      olympiadType,
-      fullName,
-      fatherMobile,
-      gender,
-      dateOfBirth,
-      school,
-      hasPhoto: !!photo,
-      photoSize: photo ? photo.size : 0,
-    })
 
     // Validate required fields
     if (
@@ -217,10 +209,12 @@ export async function registerStudent(formData: FormData) {
       !educationalInstitute ||
       !dreamUniversity ||
       !previousScholarship ||
-      !school
+      !school ||
+      !paymentNumber ||
+      !paymentTransactionId
     ) {
       console.error("Missing required fields")
-      return { success: false, error: "Missing required fields" }
+      return { success: false, error: "Missing required fields including payment information" }
     }
 
     // Validate subject for class
@@ -342,7 +336,9 @@ export async function registerStudent(formData: FormData) {
           console.log("Signature uploaded successfully, path:", signatureData.path)
 
           // Get the public URL
-          const { data: signatureUrlData } = supabaseServer.from("student-signatures").getPublicUrl(signatureData.path)
+          const { data: signatureUrlData } = supabaseServer.storage
+            .from("student-signatures")
+            .getPublicUrl(signatureData.path)
           signatureUrl = signatureUrlData.publicUrl
           console.log("Signature public URL:", signatureUrl)
         }
@@ -358,6 +354,8 @@ export async function registerStudent(formData: FormData) {
     console.log("Registration Number:", registrationNumber)
     console.log("Photo URL:", photoUrl)
     console.log("Signature URL:", signatureUrl)
+    console.log("Payment Number:", paymentNumber)
+    console.log("Payment Transaction ID:", paymentTransactionId)
 
     const studentData = {
       class: class_,
@@ -378,7 +376,10 @@ export async function registerStudent(formData: FormData) {
       photo_url: photoUrl,
       signature_url: signatureUrl,
       registration_number: registrationNumber,
-      payment_status: "pending",
+      payment_status: "submitted", // Changed from "pending" to "submitted"
+      payment_number: paymentNumber,
+      payment_transaction_id: paymentTransactionId,
+      payment_verified: false,
     }
 
     console.log("Student data to insert:", JSON.stringify(studentData, null, 2))
@@ -465,6 +466,9 @@ export async function getStudentById(id: string) {
         registrationNumber: student.registration_number,
         registrationDate: new Date(student.registration_date).toISOString().split("T")[0],
         paymentStatus: student.payment_status,
+        paymentNumber: student.payment_number,
+        paymentTransactionId: student.payment_transaction_id,
+        paymentVerified: student.payment_verified,
       },
     }
   } catch (error) {
@@ -511,6 +515,9 @@ export async function getStudentByRegistrationNumber(registrationNumber: string)
         registrationNumber: student.registration_number,
         registrationDate: new Date(student.registration_date).toISOString().split("T")[0],
         paymentStatus: student.payment_status,
+        paymentNumber: student.payment_number,
+        paymentTransactionId: student.payment_transaction_id,
+        paymentVerified: student.payment_verified,
       },
     }
   } catch (error) {
@@ -543,6 +550,9 @@ export async function getAllStudents() {
         registrationNumber: student.registration_number,
         registrationDate: new Date(student.registration_date).toISOString().split("T")[0],
         paymentStatus: student.payment_status,
+        paymentVerified: student.payment_verified,
+        paymentNumber: student.payment_number,
+        paymentTransactionId: student.payment_transaction_id,
         fatherMobile: student.father_mobile,
         school: student.school,
         photoUrl: student.photo_url,
@@ -551,6 +561,41 @@ export async function getAllStudents() {
   } catch (error) {
     console.error("Error fetching students:", error)
     return { success: false, error: "Failed to fetch students" }
+  }
+}
+
+export async function verifyPayment(id: string, verified: boolean, adminUsername?: string) {
+  try {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return { success: false, error: "Database not configured" }
+    }
+
+    const updateData: any = {
+      payment_verified: verified,
+      payment_status: verified ? "verified" : "submitted",
+      payment_verified_at: verified ? new Date().toISOString() : null,
+    }
+
+    if (adminUsername) {
+      updateData.payment_verified_by = adminUsername
+    }
+
+    const { error } = await supabaseServer.from("students").update(updateData).eq("id", id)
+
+    if (error) {
+      return { success: false, error: "Student not found or update failed" }
+    }
+
+    revalidatePath("/admin/dashboard")
+    revalidatePath(`/student/${id}`)
+
+    return {
+      success: true,
+      message: `Payment ${verified ? "verified" : "rejected"} successfully`,
+    }
+  } catch (error) {
+    console.error("Error verifying payment:", error)
+    return { success: false, error: "Failed to verify payment" }
   }
 }
 
@@ -566,8 +611,6 @@ export async function updatePaymentStatus(id: string, status: string) {
     }
 
     revalidatePath("/admin/dashboard")
-    revalidatePath(`/student/${id}`)
-
     return { success: true, message: "Payment status updated successfully" }
   } catch (error) {
     console.error("Error updating payment status:", error)
@@ -673,6 +716,7 @@ export async function addStudent(studentData: any) {
         signature_url: "/placeholder.svg?height=80&width=300", // Default placeholder
         registration_number: registrationNumber,
         payment_status: "pending",
+        payment_verified: false,
       })
       .select("id")
       .single()
@@ -840,7 +884,8 @@ export async function getAdminStats() {
         error: "Database not configured",
         stats: {
           totalRegistered: 0,
-          totalPaid: 0,
+          totalVerified: 0,
+          totalSubmitted: 0,
           totalPending: 0,
         },
       }
@@ -852,15 +897,24 @@ export async function getAdminStats() {
 
     if (countError) throw countError
 
-    // Get total paid students
-    const { count: totalPaid, error: paidError } = await supabaseServer
+    // Get total verified students
+    const { count: totalVerified, error: verifiedError } = await supabaseServer
       .from("students")
       .select("*", { count: "exact", head: true })
-      .eq("payment_status", "paid")
+      .eq("payment_verified", true)
 
-    if (paidError) throw paidError
+    if (verifiedError) throw verifiedError
 
-    // Get total pending students
+    // Get total submitted students (payment submitted but not verified)
+    const { count: totalSubmitted, error: submittedError } = await supabaseServer
+      .from("students")
+      .select("*", { count: "exact", head: true })
+      .eq("payment_status", "submitted")
+      .eq("payment_verified", false)
+
+    if (submittedError) throw submittedError
+
+    // Get total pending students (no payment info submitted)
     const { count: totalPending, error: pendingError } = await supabaseServer
       .from("students")
       .select("*", { count: "exact", head: true })
@@ -872,7 +926,8 @@ export async function getAdminStats() {
       success: true,
       stats: {
         totalRegistered: totalRegistered || 0,
-        totalPaid: totalPaid || 0,
+        totalVerified: totalVerified || 0,
+        totalSubmitted: totalSubmitted || 0,
         totalPending: totalPending || 0,
       },
     }
@@ -883,7 +938,8 @@ export async function getAdminStats() {
       error: "Failed to fetch stats",
       stats: {
         totalRegistered: 0,
-        totalPaid: 0,
+        totalVerified: 0,
+        totalSubmitted: 0,
         totalPending: 0,
       },
     }
