@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react" // 1. Import useEffect
 
 const RegisterPage = () => {
   const [image, setImage] = useState(null)
@@ -9,6 +9,9 @@ const RegisterPage = () => {
   const handleImageUpload = (event) => {
     const file = event.target.files[0]
     if (file && file.type.startsWith("image/")) {
+      if (image) {
+        URL.revokeObjectURL(image);
+      }
       setImage(URL.createObjectURL(file))
       setError("")
     } else {
@@ -16,12 +19,22 @@ const RegisterPage = () => {
     }
   }
 
+  // 2. Add useEffect for cleanup
+  useEffect(() => {
+    // This is the cleanup function that will run when the component unmounts
+    return () => {
+      if (image) {
+        URL.revokeObjectURL(image);
+      }
+    };
+  }, [image]); // The effect depends on the `image` state
+
   const handleSubmit = (event) => {
     event.preventDefault()
-    // Handle form submission logic here
   }
 
   return (
+    // ... your JSX remains the same
     <div>
       <h1>Register</h1>
       <form onSubmit={handleSubmit}>
@@ -40,10 +53,9 @@ const RegisterPage = () => {
 
         <button type="submit">Register</button>
       </form>
-      {image && <img src={image || "/placeholder.svg"} alt="Profile Preview" />}
+      {image && <img src={image} alt="Profile Preview" style={{ width: '100px', height: '100px', marginTop: '10px' }} />}
     </div>
   )
 }
 
 export default RegisterPage
-</merged_code>
