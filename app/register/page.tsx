@@ -62,6 +62,8 @@ export default function RegisterPage() {
     signature: null as File | null,
     paymentNumber: "",
     paymentTransactionId: "",
+    signatureLink: "",
+    photoLink: "",
   })
 
   // Filter schools based on search
@@ -205,6 +207,9 @@ export default function RegisterPage() {
       formDataToSubmit.append("scholarshipDetails", formData.scholarshipDetails || "")
       formDataToSubmit.append("paymentNumber", formData.paymentNumber)
       formDataToSubmit.append("paymentTransactionId", formData.paymentTransactionId)
+
+      formDataToSubmit.append("photoLink", formData.photoLink)
+      formDataToSubmit.append("signatureLink", formData.signatureLink)
 
       // Add files
       if (formData.photo) {
@@ -470,51 +475,6 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Photo Upload */}
-              <div className="flex justify-end">
-                <div className="w-32 h-40 border border-gray-300 dark:border-gray-600 flex items-center justify-center bg-white dark:bg-gray-700 relative">
-                  {photoPreview ? (
-                    <Image
-                      src={photoPreview || "/placeholder.svg"}
-                      alt="Student Photo"
-                      fill
-                      style={{ objectFit: "cover" }}
-                    />
-                  ) : (
-                    <p className="text-gray-400 dark:text-gray-500 text-xs text-center">
-                      Photo
-                      <br />
-                      (Passport Size)
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="flex flex-col items-end">
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoChange}
-                  className="w-32 text-xs"
-                  ref={photoInputRef}
-                />
-                <p className="text-emerald-600 dark:text-emerald-400 text-xs mt-1">Photo is optional but recommended</p>
-                <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
-                  Image should be 600x600 pixels; within 900KB and background should be white
-                </p>
-                {photoError && (
-                  <div className="flex items-center mt-1 text-red-500 text-xs">
-                    <AlertCircle className="h-3 w-3 mr-1" />
-                    {photoError}
-                  </div>
-                )}
-                {photoWarning && (
-                  <div className="flex items-center mt-1 text-amber-500 text-xs">
-                    <AlertCircle className="h-3 w-3 mr-1" />
-                    {photoWarning}
-                  </div>
-                )}
-              </div>
-
               {/* Personal Information */}
               <div>
                 <h4 className="text-lg font-semibold text-emerald-600 dark:text-emerald-400 border-b border-emerald-600 dark:border-emerald-400 pb-1 mb-4">
@@ -752,6 +712,34 @@ export default function RegisterPage() {
                       />
                     </div>
                   )}
+                </div>
+              </div>
+
+              {/* Google-Drive image links */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label htmlFor="photoLink" className="text-gray-700 dark:text-gray-300">
+                    Google-Drive Link (Photo)
+                  </Label>
+                  <Input
+                    id="photoLink"
+                    placeholder="https://drive.google.com/…"
+                    value={formData.photoLink}
+                    onChange={(e) => setFormData({ ...formData, photoLink: e.target.value })}
+                    className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 dark:bg-gray-700"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="signatureLink" className="text-gray-700 dark:text-gray-300">
+                    Google-Drive Link (Signature)
+                  </Label>
+                  <Input
+                    id="signatureLink"
+                    placeholder="https://drive.google.com/…"
+                    value={formData.signatureLink}
+                    onChange={(e) => setFormData({ ...formData, signatureLink: e.target.value })}
+                    className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 dark:bg-gray-700"
+                  />
                 </div>
               </div>
 

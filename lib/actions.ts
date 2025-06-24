@@ -5,72 +5,6 @@ import { cookies } from "next/headers"
 import { supabaseServer } from "./supabase"
 import { generateRegistrationNumber, type RegistrationData, validateSubjectForClass } from "./registration"
 
-// Simple server-side image processing without sharp
-async function processImageServer(file: File): Promise<{ buffer: Buffer; contentType: string }> {
-  try {
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
-
-    return {
-      buffer,
-      contentType: file.type || "image/jpeg",
-    }
-  } catch (error) {
-    console.error("Error processing image:", error)
-    throw error
-  }
-}
-
-// Function to ensure storage buckets exist (non-blocking)
-async function ensureStorageBuckets() {
-  try {
-    // Check if buckets exist, create if they don't
-    const { data: buckets, error: listError } = await supabaseServer.storage.listBuckets()
-
-    if (listError) {
-      console.warn("Could not list storage buckets:", listError.message)
-      return false
-    }
-
-    const existingBuckets = buckets?.map((bucket) => bucket.id) || []
-
-    // Create student-photos bucket if it doesn't exist
-    if (!existingBuckets.includes("student-photos")) {
-      const { error: photosBucketError } = await supabaseServer.storage.createBucket("student-photos", {
-        public: true,
-        allowedMimeTypes: ["image/jpeg", "image/png", "image/jpg"],
-        fileSizeLimit: 1024 * 1024 * 2, // 2MB
-      })
-
-      if (photosBucketError) {
-        console.warn("Could not create student-photos bucket:", photosBucketError.message)
-      } else {
-        console.log("Created student-photos bucket successfully")
-      }
-    }
-
-    // Create student-signatures bucket if it doesn't exist
-    if (!existingBuckets.includes("student-signatures")) {
-      const { error: signaturesBucketError } = await supabaseServer.storage.createBucket("student-signatures", {
-        public: true,
-        allowedMimeTypes: ["image/jpeg", "image/png", "image/jpg"],
-        fileSizeLimit: 1024 * 1024 * 1, // 1MB
-      })
-
-      if (signaturesBucketError) {
-        console.warn("Could not create student-signatures bucket:", signaturesBucketError.message)
-      } else {
-        console.log("Created student-signatures bucket successfully")
-      }
-    }
-
-    return true
-  } catch (error) {
-    console.warn("Storage bucket setup failed, continuing without file uploads:", error)
-    return false
-  }
-}
-
 // Function to get the last sequential number for a base registration number
 async function getLastSequentialNumber(baseNumber: string): Promise<number> {
   try {
@@ -124,7 +58,7 @@ export async function registerStudent(formData: FormData) {
 
     // Test database connection first
     try {
-      const { error: testError } = await supabaseServer
+      const { data: testData, error: testError } = await supabaseServer
         .from("students")
         .select("count", { count: "exact", head: true })
         .limit(1)
@@ -145,8 +79,7 @@ export async function registerStudent(formData: FormData) {
       }
     }
 
-    // Ensure storage buckets exist (don't fail if this doesn't work)
-    await ensureStorageBuckets()
+    console.log("Starting student registration process with Supabase")
 
     // Extract form data
     const class_ = formData.get("class") as string
@@ -168,6 +101,29 @@ export async function registerStudent(formData: FormData) {
     const signature = formData.get("signature") as File | null
     const paymentNumber = formData.get("paymentNumber") as string
     const paymentTransactionId = formData.get("paymentTransactionId") as string
+    const photoLink = formData.get("photoLink") as string
+    const signatureLink = formData.get("signatureLink") as string
+
+    console.log("=== EXTRACTED FORM DATA ===")
+    console.log("School:", school)
+    console.log("Class:", class_)
+    console.log("Olympiad Type:", olympiadType)
+    console.log("Full Name:", fullName)
+    console.log("Father Name:", fatherName)
+    console.log("Mother Name:", motherName)
+    console.log("Father Mobile:", fatherMobile)
+    console.log("Mother Mobile:", motherMobile)
+    console.log("Address:", address)
+    console.log("Gender:", gender)
+    console.log("Date of Birth:", dateOfBirth)
+    console.log("Educational Institute:", educationalInstitute)
+    console.log("Dream University:", dreamUniversity)
+    console.log("Previous Scholarship:", previousScholarship)
+    console.log("Scholarship Details:", scholarshipDetails)
+    console.log("Payment Number:", paymentNumber)
+    console.log("Payment Transaction ID:", paymentTransactionId)
+    console.log("Has Photo:", !!photo, "Size:", photo?.size || 0)
+    console.log("Has Signature:", !!signature, "Size:", signature?.size || 0)
 
     // Validate required fields
     if (
@@ -238,57 +194,15 @@ export async function registerStudent(formData: FormData) {
       return { success: false, error: "Failed to generate registration number" }
     }
 
-    // Handle photo upload
-    let photoUrl = "/placeholder.svg?height=200&width=150"
-    if (photo && photo.size > 0) {
-      try {
-        const { buffer: processedPhoto } = await processImageServer(photo)
-        const timestamp = Date.now()
-        const photoFileName = `${registrationNumber.replace(/[^a-zA-Z0-9]/g, "-")}-${timestamp}-photo.jpg`
-        const { data: photoData, error: photoError } = await supabaseServer.storage
-          .from("student-photos")
-          .upload(photoFileName, processedPhoto, {
-            contentType: "image/jpeg",
-            upsert: true,
-          })
+    const photoUrl = photoLink?.trim() !== "" ? photoLink.trim() : "/placeholder.svg?height=200&width=150"
+    const signatureUrl = signatureLink?.trim() !== "" ? signatureLink.trim() : "/placeholder.svg?height=80&width=300"
 
-        if (photoError) {
-          console.warn("Photo upload failed, continuing with placeholder:", photoError.message)
-        } else if (photoData) {
-          const { data: photoUrlData } = supabaseServer.storage.from("student-photos").getPublicUrl(photoData.path)
-          photoUrl = photoUrlData.publicUrl
-        }
-      } catch (error) {
-        console.warn("Photo processing/upload failed, continuing with placeholder:", error)
-      }
-    }
-
-    // Handle signature upload
-    let signatureUrl = "/placeholder.svg?height=80&width=300"
-    if (signature && signature.size > 0) {
-      try {
-        const { buffer: processedSignature } = await processImageServer(signature)
-        const timestamp = Date.now()
-        const signatureFileName = `${registrationNumber.replace(/[^a-zA-Z0-9]/g, "-")}-${timestamp}-signature.jpg`
-        const { data: signatureData, error: signatureError } = await supabaseServer.storage
-          .from("student-signatures")
-          .upload(signatureFileName, processedSignature, {
-            contentType: "image/jpeg",
-            upsert: true,
-          })
-
-        if (signatureError) {
-          console.warn("Signature upload failed, continuing with placeholder:", signatureError.message)
-        } else if (signatureData) {
-          const { data: signatureUrlData } = supabaseServer.storage
-            .from("student-signatures")
-            .getPublicUrl(signatureData.path)
-          signatureUrl = signatureUrlData.publicUrl
-        }
-      } catch (error) {
-        console.warn("Signature processing/upload failed, continuing with placeholder:", error)
-      }
-    }
+    console.log("=== CREATING STUDENT RECORD ===")
+    console.log("Registration Number:", registrationNumber)
+    console.log("Photo URL:", photoUrl)
+    console.log("Signature URL:", signatureUrl)
+    console.log("Payment Number:", paymentNumber)
+    console.log("Payment Transaction ID:", paymentTransactionId)
 
     const studentData = {
       class: class_,
@@ -309,11 +223,13 @@ export async function registerStudent(formData: FormData) {
       photo_url: photoUrl,
       signature_url: signatureUrl,
       registration_number: registrationNumber,
-      payment_status: "submitted",
+      payment_status: "submitted", // Changed from "pending" to "submitted"
       payment_number: paymentNumber,
       payment_transaction_id: paymentTransactionId,
       payment_verified: false,
     }
+
+    console.log("Student data to insert:", JSON.stringify(studentData, null, 2))
 
     // Create student record in Supabase
     const { data: student, error: insertError } = await supabaseServer
@@ -321,6 +237,9 @@ export async function registerStudent(formData: FormData) {
       .insert(studentData)
       .select("id")
       .single()
+
+    console.log("Insert result - Data:", student)
+    console.log("Insert result - Error:", insertError)
 
     if (insertError) {
       console.error("Database insert failed:", insertError)
@@ -331,6 +250,11 @@ export async function registerStudent(formData: FormData) {
     }
 
     console.log("Student registered successfully with ID:", student?.id)
+
+    console.log("=== REGISTRATION SUCCESS ===")
+    console.log("Student ID:", student?.id)
+    console.log("Registration Number:", registrationNumber)
+    console.log("=== REGISTRATION DEBUG END ===")
 
     // Force revalidation of relevant paths
     revalidatePath("/")
@@ -656,8 +580,6 @@ export async function addStudent(studentData: any) {
     return { success: false, error: "Failed to add student. Please try again." }
   }
 }
-
-// --- MISSING FUNCTIONS ADDED BELOW ---
 
 // Settings management functions
 export async function getAdmitCardSetting() {

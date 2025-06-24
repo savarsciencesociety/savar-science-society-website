@@ -19,17 +19,10 @@ CREATE TABLE IF NOT EXISTS public.students (
     photo_url TEXT,
     signature_url TEXT,
     registration_number TEXT UNIQUE NOT NULL,
+    payment_status TEXT DEFAULT 'pending',
     registration_date DATE DEFAULT CURRENT_DATE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
-    -- Payment verification fields
-    payment_status TEXT DEFAULT 'pending', -- can be 'pending', 'submitted', 'verified', 'rejected'
-    payment_number TEXT,
-    payment_transaction_id TEXT,
-    payment_verified BOOLEAN DEFAULT FALSE,
-    payment_verified_at TIMESTAMP WITH TIME ZONE,
-    payment_verified_by TEXT
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Create admins table
@@ -63,24 +56,22 @@ CREATE INDEX IF NOT EXISTS idx_students_registration_number ON public.students(r
 CREATE INDEX IF NOT EXISTS idx_students_school_class_subject_gender ON public.students(school, class, olympiad_type, gender);
 CREATE INDEX IF NOT EXISTS idx_students_created_at ON public.students(created_at);
 CREATE INDEX IF NOT EXISTS idx_students_payment_status ON public.students(payment_status);
-CREATE INDEX IF NOT EXISTS idx_students_payment_verification ON public.students(payment_verified, payment_status);
-
 
 -- Create storage buckets for student photos and signatures
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('student-photos', 'student-photos', true)
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET public = true;
 
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('student-signatures', 'student-signatures', true)
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET public = true;
 
 -- Set up RLS (Row Level Security) policies
 ALTER TABLE public.students ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.admins ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.settings ENABLE ROW LEVEL SECURITY;
 
--- Drop existing policies if they exist to avoid conflicts
+-- Drop existing policies if they exist
 DROP POLICY IF EXISTS "Allow public read access to students" ON public.students;
 DROP POLICY IF EXISTS "Allow public insert access to students" ON public.students;
 DROP POLICY IF EXISTS "Allow service role full access to students" ON public.students;
@@ -98,13 +89,13 @@ CREATE POLICY "Allow public insert access to students" ON public.students
 
 -- Allow service role full access to all tables
 CREATE POLICY "Allow service role full access to students" ON public.students
-    FOR ALL USING (auth.role() = 'service_role') WITH CHECK (auth.role() = 'service_role');
+    FOR ALL USING (auth.role() = 'service_role');
 
 CREATE POLICY "Allow service role full access to admins" ON public.admins
-    FOR ALL USING (auth.role() = 'service_role') WITH CHECK (auth.role() = 'service_role');
+    FOR ALL USING (auth.role() = 'service_role');
 
 CREATE POLICY "Allow service role full access to settings" ON public.settings
-    FOR ALL USING (auth.role() = 'service_role') WITH CHECK (auth.role() = 'service_role');
+    FOR ALL USING (auth.role() = 'service_role');
 
 -- Allow public read access to settings (for admit card status)
 CREATE POLICY "Allow public read access to settings" ON public.settings

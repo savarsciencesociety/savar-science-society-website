@@ -541,7 +541,7 @@ export default function AdminDashboard() {
             <Button
               variant="outline"
               size="sm"
-              className="border-2 border-white/30 text-white hover:bg-white/10 hover:text-white backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300"
+              className="border-2 border-white/60 bg-white/15 text-white hover:bg-white/25 hover:text-white backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
               onClick={handleLogout}
             >
               <LogOut className="h-4 w-4 mr-2" />
