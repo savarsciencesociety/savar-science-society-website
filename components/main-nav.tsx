@@ -38,8 +38,8 @@ export function MainNav() {
             <NavigationMenuLink
               className={cn(
                 navigationMenuTriggerStyle(),
-                "bg-white/10 text-slate-800 dark:text-white hover:bg-cyan-600 hover:text-white backdrop-blur-sm border border-white/20 dark:border-slate-700/20 shadow-lg transition-all duration-300",
-                pathname === "/" && "bg-cyan-600 text-white shadow-cyan-500/25",
+                "bg-transparent text-white hover:bg-emerald-700 hover:text-white",
+                pathname === "/" && "bg-emerald-700",
               )}
             >
               <Home className="mr-2 h-4 w-4" />
@@ -52,8 +52,8 @@ export function MainNav() {
             <NavigationMenuLink
               className={cn(
                 navigationMenuTriggerStyle(),
-                "bg-white/10 text-slate-800 dark:text-white hover:bg-cyan-600 hover:text-white backdrop-blur-sm border border-white/20 dark:border-slate-700/20 shadow-lg transition-all duration-300",
-                pathname === "/register" && "bg-cyan-600 text-white shadow-cyan-500/25",
+                "bg-transparent text-white hover:bg-emerald-700 hover:text-white",
+                pathname === "/register" && "bg-emerald-700",
               )}
             >
               <UserPlus className="mr-2 h-4 w-4" />
@@ -66,8 +66,8 @@ export function MainNav() {
             <NavigationMenuLink
               className={cn(
                 navigationMenuTriggerStyle(),
-                "bg-white/10 text-slate-800 dark:text-white hover:bg-cyan-600 hover:text-white backdrop-blur-sm border border-white/20 dark:border-slate-700/20 shadow-lg transition-all duration-300",
-                pathname === "/contact" && "bg-cyan-600 text-white shadow-cyan-500/25",
+                "bg-transparent text-white hover:bg-emerald-700 hover:text-white",
+                pathname === "/contact" && "bg-emerald-700",
               )}
             >
               <Phone className="mr-2 h-4 w-4" />
@@ -80,8 +80,8 @@ export function MainNav() {
             <NavigationMenuLink
               className={cn(
                 navigationMenuTriggerStyle(),
-                "bg-white/10 text-slate-800 dark:text-white hover:bg-cyan-600 hover:text-white backdrop-blur-sm border border-white/20 dark:border-slate-700/20 shadow-lg transition-all duration-300",
-                pathname.startsWith("/admin") && "bg-cyan-600 text-white shadow-cyan-500/25",
+                "bg-transparent text-white hover:bg-emerald-700 hover:text-white",
+                pathname.startsWith("/admin") && "bg-emerald-700",
               )}
             >
               <ShieldCheck className="mr-2 h-4 w-4" />
@@ -95,8 +95,8 @@ export function MainNav() {
               <NavigationMenuLink
                 className={cn(
                   navigationMenuTriggerStyle(),
-                  "bg-white/10 text-slate-800 dark:text-white hover:bg-cyan-600 hover:text-white backdrop-blur-sm border border-white/20 dark:border-slate-700/20 shadow-lg transition-all duration-300",
-                  pathname === "/admit-card" && "bg-cyan-600 text-white shadow-cyan-500/25",
+                  "bg-transparent text-white hover:bg-emerald-700 hover:text-white",
+                  pathname === "/admit-card" && "bg-emerald-700",
                 )}
               >
                 <CreditCard className="mr-2 h-4 w-4" />

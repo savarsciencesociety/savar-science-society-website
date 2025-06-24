@@ -5,6 +5,72 @@ import { cookies } from "next/headers"
 import { supabaseServer } from "./supabase"
 import { generateRegistrationNumber, type RegistrationData, validateSubjectForClass } from "./registration"
 
+// Simple server-side image processing without sharp
+async function processImageServer(file: File): Promise<{ buffer: Buffer; contentType: string }> {
+  try {
+    const arrayBuffer = await file.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+
+    return {
+      buffer,
+      contentType: file.type || "image/jpeg",
+    }
+  } catch (error) {
+    console.error("Error processing image:", error)
+    throw error
+  }
+}
+
+// Function to ensure storage buckets exist (non-blocking)
+async function ensureStorageBuckets() {
+  try {
+    // Check if buckets exist, create if they don't
+    const { data: buckets, error: listError } = await supabaseServer.storage.listBuckets()
+
+    if (listError) {
+      console.warn("Could not list storage buckets:", listError.message)
+      return false
+    }
+
+    const existingBuckets = buckets?.map((bucket) => bucket.id) || []
+
+    // Create student-photos bucket if it doesn't exist
+    if (!existingBuckets.includes("student-photos")) {
+      const { error: photosBucketError } = await supabaseServer.storage.createBucket("student-photos", {
+        public: true,
+        allowedMimeTypes: ["image/jpeg", "image/png", "image/jpg"],
+        fileSizeLimit: 1024 * 1024 * 2, // 2MB
+      })
+
+      if (photosBucketError) {
+        console.warn("Could not create student-photos bucket:", photosBucketError.message)
+      } else {
+        console.log("Created student-photos bucket successfully")
+      }
+    }
+
+    // Create student-signatures bucket if it doesn't exist
+    if (!existingBuckets.includes("student-signatures")) {
+      const { error: signaturesBucketError } = await supabaseServer.storage.createBucket("student-signatures", {
+        public: true,
+        allowedMimeTypes: ["image/jpeg", "image/png", "image/jpg"],
+        fileSizeLimit: 1024 * 1024 * 1, // 1MB
+      })
+
+      if (signaturesBucketError) {
+        console.warn("Could not create student-signatures bucket:", signaturesBucketError.message)
+      } else {
+        console.log("Created student-signatures bucket successfully")
+      }
+    }
+
+    return true
+  } catch (error) {
+    console.warn("Storage bucket setup failed, continuing without file uploads:", error)
+    return false
+  }
+}
+
 // Function to get the last sequential number for a base registration number
 async function getLastSequentialNumber(baseNumber: string): Promise<number> {
   try {
@@ -81,6 +147,12 @@ export async function registerStudent(formData: FormData) {
 
     console.log("Starting student registration process with Supabase")
 
+    // Ensure storage buckets exist (don't fail if this doesn't work)
+    const bucketsReady = await ensureStorageBuckets()
+    if (!bucketsReady) {
+      console.warn("Storage buckets not available - photos will use placeholders")
+    }
+
     // Extract form data
     const class_ = formData.get("class") as string
     const olympiadType = formData.get("olympiadType") as string
@@ -101,8 +173,6 @@ export async function registerStudent(formData: FormData) {
     const signature = formData.get("signature") as File | null
     const paymentNumber = formData.get("paymentNumber") as string
     const paymentTransactionId = formData.get("paymentTransactionId") as string
-    const photoLink = formData.get("photoLink") as string
-    const signatureLink = formData.get("signatureLink") as string
 
     console.log("=== EXTRACTED FORM DATA ===")
     console.log("School:", school)
@@ -194,8 +264,91 @@ export async function registerStudent(formData: FormData) {
       return { success: false, error: "Failed to generate registration number" }
     }
 
-    const photoUrl = photoLink?.trim() !== "" ? photoLink.trim() : "/placeholder.svg?height=200&width=150"
-    const signatureUrl = signatureLink?.trim() !== "" ? signatureLink.trim() : "/placeholder.svg?height=80&width=300"
+    // Handle photo upload (completely optional)
+    let photoUrl = "/placeholder.svg?height=200&width=150"
+    if (photo && photo.size > 0) {
+      try {
+        console.log("Processing photo for upload...")
+
+        // Simple processing without sharp
+        const { buffer: processedPhoto } = await processImageServer(photo)
+        console.log("Photo processed successfully, size:", processedPhoto.length)
+
+        // Create a safe filename with timestamp to avoid conflicts
+        const timestamp = Date.now()
+        const photoFileName = `${registrationNumber.replace(/[^a-zA-Z0-9]/g, "-")}-${timestamp}-photo.jpg`
+        console.log("Uploading photo with filename:", photoFileName)
+
+        // Upload to Supabase Storage
+        const { data: photoData, error: photoError } = await supabaseServer.storage
+          .from("student-photos")
+          .upload(photoFileName, processedPhoto, {
+            contentType: "image/jpeg",
+            upsert: true,
+          })
+
+        if (photoError) {
+          console.warn("Photo upload failed, continuing with placeholder:", photoError.message)
+          // Continue with placeholder - photo upload failure should not stop registration
+        } else if (photoData) {
+          console.log("Photo uploaded successfully, path:", photoData.path)
+
+          // Get the public URL
+          const { data: photoUrlData } = supabaseServer.storage.from("student-photos").getPublicUrl(photoData.path)
+          photoUrl = photoUrlData.publicUrl
+          console.log("Photo public URL:", photoUrl)
+        }
+      } catch (error) {
+        console.warn("Photo processing/upload failed, continuing with placeholder:", error)
+        // Continue with placeholder - photo issues should not stop registration
+      }
+    } else {
+      console.log("No photo provided - using placeholder")
+    }
+
+    // Handle signature upload (completely optional)
+    let signatureUrl = "/placeholder.svg?height=80&width=300"
+    if (signature && signature.size > 0) {
+      try {
+        console.log("Processing signature for upload...")
+
+        // Simple processing without sharp
+        const { buffer: processedSignature } = await processImageServer(signature)
+        console.log("Signature processed successfully, size:", processedSignature.length)
+
+        // Create a safe filename with timestamp to avoid conflicts
+        const timestamp = Date.now()
+        const signatureFileName = `${registrationNumber.replace(/[^a-zA-Z0-9]/g, "-")}-${timestamp}-signature.jpg`
+        console.log("Uploading signature with filename:", signatureFileName)
+
+        // Upload to Supabase Storage
+        const { data: signatureData, error: signatureError } = await supabaseServer.storage
+          .from("student-signatures")
+          .upload(signatureFileName, processedSignature, {
+            contentType: "image/jpeg",
+            upsert: true,
+          })
+
+        if (signatureError) {
+          console.warn("Signature upload failed, continuing with placeholder:", signatureError.message)
+          // Continue with placeholder - signature upload failure should not stop registration
+        } else if (signatureData) {
+          console.log("Signature uploaded successfully, path:", signatureData.path)
+
+          // Get the public URL
+          const { data: signatureUrlData } = supabaseServer.storage
+            .from("student-signatures")
+            .getPublicUrl(signatureData.path)
+          signatureUrl = signatureUrlData.publicUrl
+          console.log("Signature public URL:", signatureUrl)
+        }
+      } catch (error) {
+        console.warn("Signature processing/upload failed, continuing with placeholder:", error)
+        // Continue with placeholder - signature issues should not stop registration
+      }
+    } else {
+      console.log("No signature provided - using placeholder")
+    }
 
     console.log("=== CREATING STUDENT RECORD ===")
     console.log("Registration Number:", registrationNumber)

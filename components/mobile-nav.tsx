@@ -45,7 +45,7 @@ export function MobileNav() {
       <Button
         variant="ghost"
         size="icon"
-        className="text-slate-800 dark:text-white hover:bg-cyan-600/20 dark:hover:bg-cyan-700 backdrop-blur-sm border border-white/20 dark:border-slate-700/20 shadow-lg"
+        className="text-white hover:bg-emerald-700"
         onClick={toggleMenu}
         aria-label="Toggle menu"
       >
@@ -53,17 +53,15 @@ export function MobileNav() {
       </Button>
 
       {isOpen && (
-        <div className="absolute top-16 left-0 right-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl z-50 border-b border-slate-200 dark:border-slate-700 shadow-2xl">
+        <div className="absolute top-16 left-0 right-0 bg-emerald-600 dark:bg-emerald-700 z-50 border-b border-emerald-700 dark:border-emerald-800">
           <nav className="flex flex-col p-4 space-y-4">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2 text-slate-800 dark:text-white p-3 rounded-xl transition-all duration-300 border border-transparent",
-                  item.active
-                    ? "bg-cyan-600 text-white shadow-lg shadow-cyan-500/25 border-cyan-500"
-                    : "hover:bg-cyan-100 dark:hover:bg-cyan-900/20 hover:border-cyan-300 dark:hover:border-cyan-700",
+                  "flex items-center gap-2 text-white p-2 rounded-md",
+                  item.active ? "bg-emerald-700 dark:bg-emerald-800" : "hover:bg-emerald-700 dark:hover:bg-emerald-800",
                 )}
                 onClick={() => setIsOpen(false)}
               >
