@@ -34,6 +34,7 @@ import {
   BookOpen,
   Eye,
   AlertTriangle,
+  Sparkles,
 } from "lucide-react"
 import { IMAGES } from "@/lib/image-paths"
 import { SCHOOL_CODES } from "@/lib/registration"
@@ -414,56 +415,74 @@ export default function AdminDashboard() {
         <Button
           size="sm"
           variant="outline"
-          className="h-8 w-8 p-0 border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/30"
+          className="h-8 w-8 p-0 border-2 border-cyan-500 text-cyan-700 hover:bg-cyan-50 dark:border-cyan-400 dark:text-cyan-300 dark:hover:bg-cyan-900/20 shadow-lg hover:shadow-xl transition-all duration-300"
         >
-          <BookOpen className="h-3.5 w-3.5" />
+          <BookOpen className="h-4 w-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80">
-        <div className="space-y-3">
-          <h4 className="font-semibold text-sm">Payment Details</h4>
-          <div className="space-y-2 text-sm">
-            <div>
-              <span className="font-medium text-gray-600 dark:text-gray-400">bKash Number:</span>
-              <p className="text-gray-900 dark:text-gray-100">{student.paymentNumber || "Not provided"}</p>
+      <PopoverContent className="w-80 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border-2 border-cyan-200 dark:border-cyan-700 shadow-2xl rounded-2xl">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-gradient-to-r from-cyan-500 to-purple-500 w-10 h-10 rounded-xl flex items-center justify-center">
+              <BookOpen className="h-5 w-5 text-white" />
             </div>
             <div>
-              <span className="font-medium text-gray-600 dark:text-gray-400">Transaction ID:</span>
-              <p className="text-gray-900 dark:text-gray-100">{student.paymentTransactionId || "Not provided"}</p>
+              <h4 className="font-bold text-slate-800 dark:text-white">Payment Details</h4>
+              <p className="text-sm text-cyan-600 dark:text-cyan-400">Notebook Style View</p>
             </div>
-            <div>
-              <span className="font-medium text-gray-600 dark:text-gray-400">Status:</span>
-              <Badge
-                variant={student.paymentVerified ? "default" : "secondary"}
-                className={
-                  student.paymentVerified
-                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+          </div>
+          <div className="space-y-3 text-sm">
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-slate-700 dark:to-slate-600 p-3 rounded-xl border border-blue-200 dark:border-slate-500">
+              <span className="font-semibold text-slate-700 dark:text-slate-200">bKash Number:</span>
+              <p className="text-slate-900 dark:text-white font-mono bg-white dark:bg-slate-800 px-2 py-1 rounded mt-1 border">
+                {student.paymentNumber || "Not provided"}
+              </p>
+            </div>
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-slate-700 dark:to-slate-600 p-3 rounded-xl border border-purple-200 dark:border-slate-500">
+              <span className="font-semibold text-slate-700 dark:text-slate-200">Transaction ID:</span>
+              <p className="text-slate-900 dark:text-white font-mono bg-white dark:bg-slate-800 px-2 py-1 rounded mt-1 border">
+                {student.paymentTransactionId || "Not provided"}
+              </p>
+            </div>
+            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-700 dark:to-slate-600 p-3 rounded-xl border border-emerald-200 dark:border-slate-500">
+              <span className="font-semibold text-slate-700 dark:text-slate-200">Status:</span>
+              <div className="mt-2">
+                <Badge
+                  variant={student.paymentVerified ? "default" : "secondary"}
+                  className={
+                    student.paymentVerified
+                      ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg"
+                      : student.paymentStatus === "submitted"
+                        ? "bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg"
+                        : "bg-gradient-to-r from-slate-400 to-slate-500 text-white shadow-lg"
+                  }
+                >
+                  {student.paymentVerified
+                    ? "✅ Verified"
                     : student.paymentStatus === "submitted"
-                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-                      : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
-                }
-              >
-                {student.paymentVerified ? "Verified" : student.paymentStatus === "submitted" ? "Submitted" : "Pending"}
-              </Badge>
+                      ? "⏳ Submitted"
+                      : "⏸️ Pending"}
+                </Badge>
+              </div>
             </div>
           </div>
           {student.paymentStatus === "submitted" && !student.paymentVerified && (
-            <div className="flex gap-2 pt-2 border-t">
+            <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-600">
               <Button
                 size="sm"
                 onClick={() => handlePaymentVerification(student.id, true)}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
               >
-                <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                <CheckCircle className="h-4 w-4 mr-2" />
                 Verify
               </Button>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => handlePaymentVerification(student.id, false)}
-                className="flex-1 border-red-200 text-red-700 hover:bg-red-50"
+                className="flex-1 border-2 border-red-400 text-red-700 hover:bg-red-50 dark:border-red-500 dark:text-red-400 dark:hover:bg-red-900/20 shadow-lg hover:shadow-xl transition-all duration-300"
               >
-                <XCircle className="h-3.5 w-3.5 mr-1" />
+                <XCircle className="h-4 w-4 mr-2" />
                 Reject
               </Button>
             </div>
@@ -475,41 +494,54 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-cyan-50 dark:from-slate-900 dark:to-cyan-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500 mx-auto"></div>
-          <p className="mt-4 text-emerald-600 dark:text-emerald-400">Loading dashboard...</p>
+          <div className="relative mb-8">
+            <div className="w-16 h-16 border-4 border-cyan-400/30 rounded-full animate-spin">
+              <div className="absolute top-0 left-0 w-16 h-16 border-4 border-transparent border-t-cyan-400 rounded-full animate-spin"></div>
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Sparkles className="h-6 w-6 text-cyan-400 animate-pulse" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Loading Dashboard...</h2>
+          <p className="text-cyan-600 dark:text-cyan-400 animate-pulse">Preparing admin interface...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
-      <header className="bg-emerald-600 dark:bg-emerald-700 text-white py-4 border-b border-emerald-700 dark:border-emerald-800">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-cyan-50 dark:from-slate-900 dark:to-cyan-900">
+      <header className="bg-gradient-to-r from-cyan-600 to-purple-600 dark:from-cyan-700 dark:to-purple-700 text-white py-6 shadow-2xl">
         <div className="container mx-auto px-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-              <Image
-                src={IMAGES.LOGO || "/placeholder.svg"}
-                alt="Savar Science Society Logo"
-                width={50}
-                height={50}
-                className="rounded-full"
-              />
+          <div className="flex items-center gap-4">
+            <Link href="/" className="flex items-center gap-4 hover:opacity-90 transition-all duration-300 group">
+              <div className="relative">
+                <div className="absolute inset-0 bg-white/20 rounded-full blur-lg group-hover:blur-xl transition-all duration-300"></div>
+                <Image
+                  src={IMAGES.LOGO || "/placeholder.svg"}
+                  alt="Savar Science Society Logo"
+                  width={60}
+                  height={60}
+                  className="rounded-full relative z-10 ring-2 ring-white/30"
+                />
+              </div>
               <div>
-                <h1 className="text-xl font-bold">Admin Dashboard</h1>
-                <p className="text-sm text-emerald-100">Savar Science Society</p>
+                <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+                <p className="text-cyan-100">Savar Science Society</p>
               </div>
             </Link>
           </div>
           <div className="flex items-center gap-4">
-            <p className="text-sm hidden md:block">Welcome, {adminName}</p>
+            <p className="text-sm hidden md:block bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm">
+              Welcome, <span className="font-semibold">{adminName}</span>
+            </p>
             <ThemeToggle />
             <Button
               variant="outline"
               size="sm"
-              className="border-white/20 text-white hover:bg-emerald-700 hover:text-white"
+              className="border-2 border-white/30 text-white hover:bg-white/10 hover:text-white backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300"
               onClick={handleLogout}
             >
               <LogOut className="h-4 w-4 mr-2" />
@@ -522,75 +554,78 @@ export default function AdminDashboard() {
       <main className="container mx-auto px-4 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="border-emerald-200 dark:border-emerald-700 dark:bg-gray-800">
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-2 border-cyan-200 dark:border-cyan-700 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
             <CardContent className="p-6 flex items-center">
-              <div className="bg-emerald-100 dark:bg-emerald-900/30 p-4 rounded-full mr-4">
-                <Users className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+              <div className="bg-gradient-to-r from-cyan-500 to-blue-500 p-4 rounded-2xl mr-4 shadow-lg">
+                <Users className="h-8 w-8 text-white" />
               </div>
               <div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">Total Registrations</p>
-                <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{stats.totalRegistered}</h3>
+                <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Total Registrations</p>
+                <h3 className="text-3xl font-black text-slate-800 dark:text-white">{stats.totalRegistered}</h3>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-emerald-200 dark:border-emerald-700 dark:bg-gray-800">
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-2 border-green-200 dark:border-green-700 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
             <CardContent className="p-6 flex items-center">
-              <div className="bg-green-100 dark:bg-green-900/30 p-4 rounded-full mr-4">
-                <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-4 rounded-2xl mr-4 shadow-lg">
+                <CheckCircle className="h-8 w-8 text-white" />
               </div>
               <div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">Payment Verified</p>
-                <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{stats.totalVerified}</h3>
+                <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Payment Verified</p>
+                <h3 className="text-3xl font-black text-slate-800 dark:text-white">{stats.totalVerified}</h3>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-emerald-200 dark:border-emerald-700 dark:bg-gray-800">
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-2 border-yellow-200 dark:border-yellow-700 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
             <CardContent className="p-6 flex items-center">
-              <div className="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-full mr-4">
-                <AlertTriangle className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+              <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-4 rounded-2xl mr-4 shadow-lg">
+                <AlertTriangle className="h-8 w-8 text-white" />
               </div>
               <div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">Payment Submitted</p>
-                <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{stats.totalSubmitted}</h3>
+                <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Payment Submitted</p>
+                <h3 className="text-3xl font-black text-slate-800 dark:text-white">{stats.totalSubmitted}</h3>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-emerald-200 dark:border-emerald-700 dark:bg-gray-800">
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-2 border-slate-200 dark:border-slate-700 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
             <CardContent className="p-6 flex items-center">
-              <div className="bg-gray-100 dark:bg-gray-900/30 p-4 rounded-full mr-4">
-                <Clock className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+              <div className="bg-gradient-to-r from-slate-500 to-slate-600 p-4 rounded-2xl mr-4 shadow-lg">
+                <Clock className="h-8 w-8 text-white" />
               </div>
               <div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">Payment Pending</p>
-                <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{stats.totalPending}</h3>
+                <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Payment Pending</p>
+                <h3 className="text-3xl font-black text-slate-800 dark:text-white">{stats.totalPending}</h3>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Students Table */}
-        <Card className="border-emerald-200 dark:border-emerald-700 dark:bg-gray-800">
-          <CardHeader className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-2 border-cyan-200 dark:border-cyan-700 shadow-2xl rounded-2xl">
+          <CardHeader className="p-6 border-b-2 border-slate-200 dark:border-slate-700">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <h2 className="text-xl font-bold text-gray-800 dark:text-white">Student Registrations</h2>
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
+                <Sparkles className="h-6 w-6 text-cyan-500" />
+                Student Registrations
+              </h2>
 
               <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
                 <div className="relative w-full md:w-64">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                   <input
                     type="text"
                     placeholder="Search by name, ID, phone..."
-                    className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    className="pl-10 pr-4 py-3 w-full border-2 border-slate-300 dark:border-slate-600 rounded-xl dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:border-cyan-500 dark:focus:border-cyan-400 transition-colors shadow-lg"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
 
                 <Select value={filter} onValueChange={setFilter}>
-                  <SelectTrigger className="w-full md:w-40 border-gray-300 dark:border-gray-600 dark:bg-gray-700">
+                  <SelectTrigger className="w-full md:w-40 border-2 border-slate-300 dark:border-slate-600 dark:bg-slate-700 rounded-xl shadow-lg">
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -603,36 +638,44 @@ export default function AdminDashboard() {
 
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                    <Button className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl">
                       <UserPlus className="h-4 w-4 mr-2" />
                       Add Student
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                  <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border-2 border-cyan-200 dark:border-cyan-700 rounded-2xl">
                     <DialogHeader>
-                      <DialogTitle>Add New Student</DialogTitle>
-                      <DialogDescription>
+                      <DialogTitle className="text-slate-800 dark:text-white">Add New Student</DialogTitle>
+                      <DialogDescription className="text-slate-600 dark:text-slate-400">
                         Fill in the student details below to add a new registration.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="fullName">Full Name *</Label>
+                          <Label htmlFor="fullName" className="text-slate-700 dark:text-slate-300 font-medium">
+                            Full Name *
+                          </Label>
                           <Input
                             id="fullName"
                             value={newStudent.fullName}
                             onChange={(e) => setNewStudent({ ...newStudent, fullName: e.target.value })}
+                            className="border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:border-cyan-500 dark:focus:border-cyan-400"
                             required
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="class">Class *</Label>
+                          <Label htmlFor="class" className="text-slate-700 dark:text-slate-300 font-medium">
+                            Class *
+                          </Label>
                           <Select
                             value={newStudent.class}
                             onValueChange={(value) => setNewStudent({ ...newStudent, class: value })}
                           >
-                            <SelectTrigger id="class">
+                            <SelectTrigger
+                              id="class"
+                              className="border-2 border-slate-300 dark:border-slate-600 rounded-xl"
+                            >
                               <SelectValue placeholder="Select class" />
                             </SelectTrigger>
                             <SelectContent>
@@ -647,12 +690,17 @@ export default function AdminDashboard() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="olympiadType">Olympiad Type *</Label>
+                        <Label htmlFor="olympiadType" className="text-slate-700 dark:text-slate-300 font-medium">
+                          Olympiad Type *
+                        </Label>
                         <Select
                           value={newStudent.olympiadType}
                           onValueChange={(value) => setNewStudent({ ...newStudent, olympiadType: value })}
                         >
-                          <SelectTrigger id="olympiadType">
+                          <SelectTrigger
+                            id="olympiadType"
+                            className="border-2 border-slate-300 dark:border-slate-600 rounded-xl"
+                          >
                             <SelectValue placeholder="Select olympiad type" />
                           </SelectTrigger>
                           <SelectContent>
@@ -664,12 +712,17 @@ export default function AdminDashboard() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="school">School/Institution *</Label>
+                        <Label htmlFor="school" className="text-slate-700 dark:text-slate-300 font-medium">
+                          School/Institution *
+                        </Label>
                         <Select
                           value={newStudent.school}
                           onValueChange={(value) => setNewStudent({ ...newStudent, school: value })}
                         >
-                          <SelectTrigger id="school">
+                          <SelectTrigger
+                            id="school"
+                            className="border-2 border-slate-300 dark:border-slate-600 rounded-xl"
+                          >
                             <SelectValue placeholder="Select school/institution" />
                           </SelectTrigger>
                           <SelectContent className="max-h-60 overflow-y-auto">
@@ -684,20 +737,26 @@ export default function AdminDashboard() {
 
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="fatherName">Father's Name *</Label>
+                          <Label htmlFor="fatherName" className="text-slate-700 dark:text-slate-300 font-medium">
+                            Father's Name *
+                          </Label>
                           <Input
                             id="fatherName"
                             value={newStudent.fatherName}
                             onChange={(e) => setNewStudent({ ...newStudent, fatherName: e.target.value })}
+                            className="border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:border-cyan-500 dark:focus:border-cyan-400"
                             required
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="fatherMobile">Father's Mobile *</Label>
+                          <Label htmlFor="fatherMobile" className="text-slate-700 dark:text-slate-300 font-medium">
+                            Father's Mobile *
+                          </Label>
                           <Input
                             id="fatherMobile"
                             value={newStudent.fatherMobile}
                             onChange={(e) => setNewStudent({ ...newStudent, fatherMobile: e.target.value })}
+                            className="border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:border-cyan-500 dark:focus:border-cyan-400"
                             required
                           />
                         </div>
@@ -705,37 +764,46 @@ export default function AdminDashboard() {
 
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="motherName">Mother's Name *</Label>
+                          <Label htmlFor="motherName" className="text-slate-700 dark:text-slate-300 font-medium">
+                            Mother's Name *
+                          </Label>
                           <Input
                             id="motherName"
                             value={newStudent.motherName}
                             onChange={(e) => setNewStudent({ ...newStudent, motherName: e.target.value })}
+                            className="border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:border-cyan-500 dark:focus:border-cyan-400"
                             required
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="motherMobile">Mother's Mobile</Label>
+                          <Label htmlFor="motherMobile" className="text-slate-700 dark:text-slate-300 font-medium">
+                            Mother's Mobile
+                          </Label>
                           <Input
                             id="motherMobile"
                             value={newStudent.motherMobile}
                             onChange={(e) => setNewStudent({ ...newStudent, motherMobile: e.target.value })}
+                            className="border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:border-cyan-500 dark:focus:border-cyan-400"
                           />
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="address">Address *</Label>
+                        <Label htmlFor="address" className="text-slate-700 dark:text-slate-300 font-medium">
+                          Address *
+                        </Label>
                         <Input
                           id="address"
                           value={newStudent.address}
                           onChange={(e) => setNewStudent({ ...newStudent, address: e.target.value })}
+                          className="border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:border-cyan-500 dark:focus:border-cyan-400"
                           required
                         />
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label>Gender *</Label>
+                          <Label className="text-slate-700 dark:text-slate-300 font-medium">Gender *</Label>
                           <RadioGroup
                             value={newStudent.gender}
                             onValueChange={(value) => setNewStudent({ ...newStudent, gender: value })}
@@ -743,43 +811,61 @@ export default function AdminDashboard() {
                           >
                             <div className="flex items-center space-x-2">
                               <RadioGroupItem value="male" id="male" />
-                              <Label htmlFor="male">Male</Label>
+                              <Label htmlFor="male" className="text-slate-700 dark:text-slate-300">
+                                Male
+                              </Label>
                             </div>
                             <div className="flex items-center space-x-2">
                               <RadioGroupItem value="female" id="female" />
-                              <Label htmlFor="female">Female</Label>
+                              <Label htmlFor="female" className="text-slate-700 dark:text-slate-300">
+                                Female
+                              </Label>
                             </div>
                           </RadioGroup>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="dateOfBirth">Date of Birth *</Label>
+                          <Label htmlFor="dateOfBirth" className="text-slate-700 dark:text-slate-300 font-medium">
+                            Date of Birth *
+                          </Label>
                           <Input
                             id="dateOfBirth"
                             type="date"
                             value={newStudent.dateOfBirth}
                             onChange={(e) => setNewStudent({ ...newStudent, dateOfBirth: e.target.value })}
+                            className="border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:border-cyan-500 dark:focus:border-cyan-400"
                             required
                           />
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="educationalInstitute">Educational Institute *</Label>
+                        <Label
+                          htmlFor="educationalInstitute"
+                          className="text-slate-700 dark:text-slate-300 font-medium"
+                        >
+                          Educational Institute *
+                        </Label>
                         <Input
                           id="educationalInstitute"
                           value={newStudent.educationalInstitute}
                           onChange={(e) => setNewStudent({ ...newStudent, educationalInstitute: e.target.value })}
+                          className="border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:border-cyan-500 dark:focus:border-cyan-400"
                           required
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="dreamUniversity">Dream University *</Label>
+                        <Label htmlFor="dreamUniversity" className="text-slate-700 dark:text-slate-300 font-medium">
+                          Dream University *
+                        </Label>
                         <Select
                           value={newStudent.dreamUniversity}
                           onValueChange={(value) => setNewStudent({ ...newStudent, dreamUniversity: value })}
                         >
-                          <SelectTrigger id="dreamUniversity">
+                          <SelectTrigger
+                            id="dreamUniversity"
+                            className="border-2 border-slate-300 dark:border-slate-600 rounded-xl"
+                          >
                             <SelectValue placeholder="Select dream university" />
                           </SelectTrigger>
                           <SelectContent>
@@ -791,7 +877,7 @@ export default function AdminDashboard() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Previous Scholarship</Label>
+                        <Label className="text-slate-700 dark:text-slate-300 font-medium">Previous Scholarship</Label>
                         <RadioGroup
                           value={newStudent.previousScholarship}
                           onValueChange={(value) => setNewStudent({ ...newStudent, previousScholarship: value })}
@@ -799,34 +885,48 @@ export default function AdminDashboard() {
                         >
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="yes" id="scholarship-yes" />
-                            <Label htmlFor="scholarship-yes">Yes</Label>
+                            <Label htmlFor="scholarship-yes" className="text-slate-700 dark:text-slate-300">
+                              Yes
+                            </Label>
                           </div>
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="no" id="scholarship-no" />
-                            <Label htmlFor="scholarship-no">No</Label>
+                            <Label htmlFor="scholarship-no" className="text-slate-700 dark:text-slate-300">
+                              No
+                            </Label>
                           </div>
                         </RadioGroup>
                       </div>
 
                       {newStudent.previousScholarship === "yes" && (
                         <div className="space-y-2">
-                          <Label htmlFor="scholarshipDetails">Scholarship Details</Label>
+                          <Label
+                            htmlFor="scholarshipDetails"
+                            className="text-slate-700 dark:text-slate-300 font-medium"
+                          >
+                            Scholarship Details
+                          </Label>
                           <Input
                             id="scholarshipDetails"
                             value={newStudent.scholarshipDetails}
                             onChange={(e) => setNewStudent({ ...newStudent, scholarshipDetails: e.target.value })}
+                            className="border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:border-cyan-500 dark:focus:border-cyan-400"
                           />
                         </div>
                       )}
                     </div>
                     <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsAddDialogOpen(false)}
+                        className="border-2 border-slate-300 dark:border-slate-600 rounded-xl"
+                      >
                         Cancel
                       </Button>
                       <Button
                         onClick={handleAddStudent}
                         disabled={isSubmitting}
-                        className="bg-emerald-600 hover:bg-emerald-700"
+                        className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white rounded-xl"
                       >
                         {isSubmitting ? "Adding..." : "Add Student"}
                       </Button>
@@ -837,8 +937,10 @@ export default function AdminDashboard() {
                 <Button
                   onClick={handleAdmitCardToggle}
                   className={`${
-                    admitCardEnabled ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"
-                  } text-white`}
+                    admitCardEnabled
+                      ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
+                      : "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+                  } text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl`}
                 >
                   {admitCardEnabled ? "Disable Admit Card" : "Enable Admit Card"}
                 </Button>
@@ -851,25 +953,28 @@ export default function AdminDashboard() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gray-50 dark:bg-gray-800">
-                    <TableHead className="font-semibold">Photo</TableHead>
-                    <TableHead className="font-semibold">Name</TableHead>
-                    <TableHead className="font-semibold">Registration No.</TableHead>
-                    <TableHead className="font-semibold">Class</TableHead>
-                    <TableHead className="font-semibold">Olympiad</TableHead>
-                    <TableHead className="font-semibold">School</TableHead>
-                    <TableHead className="font-semibold">Date</TableHead>
-                    <TableHead className="font-semibold">Father's Mobile</TableHead>
-                    <TableHead className="font-semibold">Payment Status</TableHead>
-                    <TableHead className="font-semibold">Actions</TableHead>
+                  <TableRow className="bg-gradient-to-r from-slate-100 to-cyan-100 dark:from-slate-700 dark:to-slate-600 border-b-2 border-slate-200 dark:border-slate-600">
+                    <TableHead className="font-bold text-slate-800 dark:text-white">Photo</TableHead>
+                    <TableHead className="font-bold text-slate-800 dark:text-white">Name</TableHead>
+                    <TableHead className="font-bold text-slate-800 dark:text-white">Registration No.</TableHead>
+                    <TableHead className="font-bold text-slate-800 dark:text-white">Class</TableHead>
+                    <TableHead className="font-bold text-slate-800 dark:text-white">Olympiad</TableHead>
+                    <TableHead className="font-bold text-slate-800 dark:text-white">School</TableHead>
+                    <TableHead className="font-bold text-slate-800 dark:text-white">Date</TableHead>
+                    <TableHead className="font-bold text-slate-800 dark:text-white">Father's Mobile</TableHead>
+                    <TableHead className="font-bold text-slate-800 dark:text-white">Payment Status</TableHead>
+                    <TableHead className="font-bold text-slate-800 dark:text-white">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredStudents.length > 0 ? (
                     filteredStudents.map((student) => (
-                      <TableRow key={student.id} className="border-t border-gray-200 dark:border-gray-700">
+                      <TableRow
+                        key={student.id}
+                        className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                      >
                         <TableCell>
-                          <div className="w-10 h-10 relative overflow-hidden rounded-full">
+                          <div className="w-12 h-12 relative overflow-hidden rounded-full ring-2 ring-cyan-200 dark:ring-cyan-700">
                             {student.photoUrl && !photoErrors[student.id] ? (
                               <Image
                                 src={student.photoUrl || "/placeholder.svg"}
@@ -879,28 +984,36 @@ export default function AdminDashboard() {
                                 onError={() => handleImageError(student.id)}
                               />
                             ) : (
-                              <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                                <span className="text-gray-500 dark:text-gray-400 text-xs">No img</span>
+                              <div className="w-12 h-12 bg-gradient-to-r from-slate-200 to-slate-300 dark:from-slate-600 dark:to-slate-700 rounded-full flex items-center justify-center">
+                                <span className="text-slate-500 dark:text-slate-400 text-xs font-medium">No img</span>
                               </div>
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="font-medium">{student.fullName}</TableCell>
-                        <TableCell>{student.registrationNumber}</TableCell>
-                        <TableCell>{student.class}</TableCell>
-                        <TableCell>{student.olympiadType}</TableCell>
-                        <TableCell>{student.school}</TableCell>
-                        <TableCell>{student.registrationDate}</TableCell>
-                        <TableCell>{student.fatherMobile}</TableCell>
+                        <TableCell className="font-semibold text-slate-800 dark:text-white">
+                          {student.fullName}
+                        </TableCell>
+                        <TableCell className="font-mono text-slate-700 dark:text-slate-300">
+                          {student.registrationNumber}
+                        </TableCell>
+                        <TableCell className="text-slate-700 dark:text-slate-300">{student.class}</TableCell>
+                        <TableCell className="text-slate-700 dark:text-slate-300">{student.olympiadType}</TableCell>
+                        <TableCell className="text-slate-700 dark:text-slate-300 max-w-32 truncate">
+                          {student.school}
+                        </TableCell>
+                        <TableCell className="text-slate-700 dark:text-slate-300">{student.registrationDate}</TableCell>
+                        <TableCell className="font-mono text-slate-700 dark:text-slate-300">
+                          {student.fatherMobile}
+                        </TableCell>
                         <TableCell>
                           <Badge
                             variant={student.paymentVerified ? "default" : "secondary"}
                             className={
                               student.paymentVerified
-                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg"
                                 : student.paymentStatus === "submitted"
-                                  ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-                                  : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+                                  ? "bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg"
+                                  : "bg-gradient-to-r from-slate-400 to-slate-500 text-white shadow-lg"
                             }
                           >
                             {student.paymentVerified ? (
@@ -922,7 +1035,7 @@ export default function AdminDashboard() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="h-8 border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-900/30"
+                              className="h-8 border-2 border-cyan-400 text-cyan-700 hover:bg-cyan-50 dark:border-cyan-500 dark:text-cyan-300 dark:hover:bg-cyan-900/20 shadow-lg hover:shadow-xl transition-all duration-300"
                               onClick={() => router.push(`/student/${student.id}`)}
                             >
                               <Eye className="h-3.5 w-3.5 mr-1" />
@@ -939,25 +1052,29 @@ export default function AdminDashboard() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="h-8 border-red-200 text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/30"
+                                  className="h-8 border-2 border-red-400 text-red-700 hover:bg-red-50 dark:border-red-500 dark:text-red-400 dark:hover:bg-red-900/20 shadow-lg hover:shadow-xl transition-all duration-300"
                                   onClick={() => setStudentToDelete(student.id)}
                                 >
                                   <Trash2 className="h-3.5 w-3.5 mr-1" />
                                   Delete
                                 </Button>
                               </AlertDialogTrigger>
-                              <AlertDialogContent>
+                              <AlertDialogContent className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border-2 border-red-200 dark:border-red-700 rounded-2xl">
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                  <AlertDialogDescription>
+                                  <AlertDialogTitle className="text-slate-800 dark:text-white">
+                                    Are you sure?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription className="text-slate-600 dark:text-slate-400">
                                     This will permanently delete the student record for {student.fullName}. This action
                                     cannot be undone.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogCancel className="border-2 border-slate-300 dark:border-slate-600 rounded-xl">
+                                    Cancel
+                                  </AlertDialogCancel>
                                   <AlertDialogAction
-                                    className="bg-red-600 hover:bg-red-700"
+                                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl"
                                     onClick={() => handleDeleteStudent(student.id)}
                                   >
                                     Delete
@@ -971,10 +1088,18 @@ export default function AdminDashboard() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={10} className="text-center py-8 text-gray-500 dark:text-gray-400">
-                        {searchTerm || filter !== "all"
-                          ? "No students match your search criteria"
-                          : "No students registered yet"}
+                      <TableCell colSpan={10} className="text-center py-12 text-slate-500 dark:text-slate-400">
+                        <div className="flex flex-col items-center gap-4">
+                          <Users className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+                          <div>
+                            <h3 className="text-lg font-semibold mb-2">No students found</h3>
+                            <p>
+                              {searchTerm || filter !== "all"
+                                ? "No students match your search criteria"
+                                : "No students registered yet"}
+                            </p>
+                          </div>
+                        </div>
                       </TableCell>
                     </TableRow>
                   )}
@@ -985,9 +1110,9 @@ export default function AdminDashboard() {
         </Card>
       </main>
 
-      <footer className="bg-emerald-600 dark:bg-emerald-700 text-white py-4 border-t border-emerald-700 dark:border-emerald-800 mt-12">
+      <footer className="bg-gradient-to-r from-cyan-600 to-purple-600 dark:from-cyan-700 dark:to-purple-700 text-white py-6 mt-12 shadow-2xl">
         <div className="container mx-auto px-4 text-center">
-          <p>© 2025 Savar Science Society. All rights reserved.</p>
+          <p className="text-cyan-100">© 2025 Savar Science Society. All rights reserved.</p>
         </div>
       </footer>
     </div>
