@@ -44,12 +44,11 @@ export async function registerStudent(formData: FormData) {
 
     // Check if Supabase is configured
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.error("Missing environment variables:")
-      console.error("SUPABASE_URL:", !!process.env.NEXT_PUBLIC_SUPABASE_URL)
-      console.error("SUPABASE_SERVICE_ROLE_KEY:", !!process.env.SUPABASE_SERVICE_ROLE_KEY)
+      console.log("Supabase environment variables not configured")
       return {
         success: false,
-        error: "Database not configured. Please add Supabase integration to continue.",
+        error: "Database integration required. Please add Supabase to continue with student registration.",
+        requiresSetup: true,
       }
     }
 
@@ -282,7 +281,11 @@ export async function registerStudent(formData: FormData) {
 export async function getStudentById(id: string) {
   try {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return { success: false, error: "Database not configured" }
+      return {
+        success: false,
+        error: "Database integration required. Please add Supabase to continue.",
+        requiresSetup: true,
+      }
     }
     const { data: student, error } = await supabaseServer.from("students").select("*").eq("id", id).single()
 
@@ -327,7 +330,11 @@ export async function getStudentById(id: string) {
 export async function getStudentByRegistrationNumber(registrationNumber: string) {
   try {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return { success: false, error: "Database not configured" }
+      return {
+        success: false,
+        error: "Database integration required. Please add Supabase to continue.",
+        requiresSetup: true,
+      }
     }
     const { data: student, error } = await supabaseServer
       .from("students")
@@ -376,7 +383,12 @@ export async function getStudentByRegistrationNumber(registrationNumber: string)
 export async function getAllStudents() {
   try {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return { success: false, error: "Database not configured", students: [] }
+      return {
+        success: false,
+        error: "Database integration required. Please add Supabase to continue.",
+        students: [],
+        requiresSetup: true,
+      }
     }
     const { data: students, error } = await supabaseServer
       .from("students")
@@ -414,7 +426,11 @@ export async function getAllStudents() {
 export async function verifyPayment(id: string, verified: boolean, adminUsername?: string) {
   try {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return { success: false, error: "Database not configured" }
+      return {
+        success: false,
+        error: "Database integration required. Please add Supabase to continue.",
+        requiresSetup: true,
+      }
     }
 
     const updateData: any = {
@@ -449,7 +465,11 @@ export async function verifyPayment(id: string, verified: boolean, adminUsername
 export async function updatePaymentStatus(id: string, status: string) {
   try {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return { success: false, error: "Database not configured" }
+      return {
+        success: false,
+        error: "Database integration required. Please add Supabase to continue.",
+        requiresSetup: true,
+      }
     }
     const { error } = await supabaseServer.from("students").update({ payment_status: status }).eq("id", id)
 
@@ -468,7 +488,11 @@ export async function updatePaymentStatus(id: string, status: string) {
 export async function deleteStudent(id: string) {
   try {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return { success: false, error: "Database not configured" }
+      return {
+        success: false,
+        error: "Database integration required. Please add Supabase to continue.",
+        requiresSetup: true,
+      }
     }
     // First get the student to get file paths
     const { data: student, error: getError } = await supabaseServer
@@ -514,7 +538,11 @@ export async function deleteStudent(id: string) {
 export async function addStudent(studentData: any) {
   try {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return { success: false, error: "Database not configured" }
+      return {
+        success: false,
+        error: "Database integration required. Please add Supabase to continue.",
+        requiresSetup: true,
+      }
     }
     // Validate subject for class
     if (!validateSubjectForClass(studentData.class, studentData.olympiadType)) {
@@ -585,7 +613,12 @@ export async function addStudent(studentData: any) {
 export async function getAdmitCardSetting() {
   try {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return { success: false, error: "Database not configured", enabled: false }
+      return {
+        success: false,
+        error: "Database integration required. Please add Supabase to continue.",
+        enabled: false,
+        requiresSetup: true,
+      }
     }
     const { data: setting, error } = await supabaseServer
       .from("settings")
@@ -611,7 +644,11 @@ export async function getAdmitCardSetting() {
 export async function updateAdmitCardSetting(enabled: boolean) {
   try {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return { success: false, error: "Database not configured" }
+      return {
+        success: false,
+        error: "Database integration required. Please add Supabase to continue.",
+        requiresSetup: true,
+      }
     }
     const { error } = await supabaseServer.from("settings").upsert({
       id: "admit_card",
@@ -638,7 +675,11 @@ export async function updateAdmitCardSetting(enabled: boolean) {
 export async function adminLogin(formData: FormData) {
   try {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return { success: false, error: "Database not configured" }
+      return {
+        success: false,
+        error: "Database integration required. Please add Supabase to continue.",
+        requiresSetup: true,
+      }
     }
     const username = formData.get("username") as string
     const password = formData.get("password") as string
@@ -728,7 +769,8 @@ export async function getAdminStats() {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
       return {
         success: false,
-        error: "Database not configured",
+        error: "Database integration required. Please add Supabase to continue.",
+        requiresSetup: true,
         stats: {
           totalRegistered: 0,
           totalVerified: 0,

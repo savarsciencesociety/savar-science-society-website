@@ -474,7 +474,7 @@ export default function RegisterPage() {
                   {formErrors.olympiadType && <p className="text-red-500 text-xs mt-1">{formErrors.olympiadType}</p>}
                 </div>
               </div>
-
+            
               {/* Personal Information */}
               <div>
                 <h4 className="text-lg font-semibold text-emerald-600 dark:text-emerald-400 border-b border-emerald-600 dark:border-emerald-400 pb-1 mb-4">

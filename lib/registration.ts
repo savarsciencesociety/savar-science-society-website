@@ -59,6 +59,7 @@
  *   52 = Savar Cantonment Public School And College 
  *   53 = BEPZA Public School & College
  *   54 = Morning Glory School & College
+ *   55 = Jahangirnagar School And College
  *   DE (4th-5th digits): Class
  *   05 = Class 5
  *   06 = Class 6
@@ -70,6 +71,7 @@
  *   1 = Science (available for classes 5-8)
  *   2 = Math (available for classes 5-10)
  *   3 = Physics (available for classes 9-10)
+ *   4 = Both (available for classes 5-8)
  * G (7th digit): Gender
  *   1 = Male
  *   2 = Female
@@ -138,12 +140,14 @@ export const SCHOOL_CODES = {
   "Savar Cantonment Public School And College": "52",
   "Morning Glory School & College": "53",
   "BEPZA Public School & College": "54",
+  "Jahangirnagar School And College": "55",
 } as const
 
 export const SUBJECT_CODES = {
   Science: "1",
   Math: "2",
   Physics: "3",
+  Both: "4",
 } as const
 
 export const GENDER_CODES = {
@@ -161,41 +165,44 @@ export const CLASS_CODES = {
 } as const
 
 /**
- * Validates if the subject is available for the given class
+ * Validates whether a subject is allowed for a given class
  */
 export function validateSubjectForClass(classNum: string, subject: string): boolean {
-  const classNumber = Number.parseInt(classNum)
+  const classNumber = Number.parseInt(classNum);
 
-  switch (subject) {
-    case "Science":
-      return classNumber >= 5 && classNumber <= 8
-    case "Math":
-      return classNumber >= 5 && classNumber <= 10
-    case "Physics":
-      return classNumber >= 9 && classNumber <= 10
-    default:
-      return false
+  const subjectMap: Record<string, string[]> = {
+    "5-8": ["Science", "Math", "Both"],
+    "9-10": ["Math", "Physics", "Both"]
+  };
+
+  for (const range in subjectMap) {
+    const [start, end] = range.split("-").map(Number);
+    if (classNumber >= start && classNumber <= end) {
+      return subjectMap[range].includes(subject);
+    }
   }
+
+  return false;
 }
 
 /**
  * Gets available subjects for a given class
  */
 export function getAvailableSubjects(classNum: string): string[] {
-  const classNumber = Number.parseInt(classNum)
+  const classNumber = Number.parseInt(classNum);
 
   if (classNumber >= 5 && classNumber <= 8) {
-    return ["Science", "Math"]
+    return ["Science", "Math", "Both"];
   } else if (classNumber >= 9 && classNumber <= 10) {
-    return ["Math", "Physics"]
+    return ["Math", "Physics", "Both"];
   }
 
-  return []
+  return [];
 }
 
-/**
- * Generates the base registration number without the sequential part
- */
+
+
+
 export function generateBaseRegistrationNumber(data: RegistrationData): string {
   const schoolCode = SCHOOL_CODES[data.school as keyof typeof SCHOOL_CODES]
   const classCode = CLASS_CODES[data.class as keyof typeof CLASS_CODES]
@@ -324,6 +331,12 @@ export function getRegistrationExamples(): Array<{
       data: { school: "Gayen Bikash School", class: "10", olympiadType: "Physics", gender: "male" },
       expectedBase: "3281031",
       fullExample: "3281031001",
+    },
+    {
+      description: "Central Laboratory School and College, Class 6, Both, Female, 1st student",
+      data: { school: "Central Laboratory School and College", class: "6", olympiadType: "Both", gender: "female" },
+      expectedBase: "3010642",
+      fullExample: "3010642001",
     },
   ]
 }
