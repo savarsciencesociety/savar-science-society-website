@@ -248,51 +248,28 @@ export default function HomePage() {
 
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
               <Button
-                asChild
-                className="group relative h-16 w-48 overflow-hidden rounded-xl border-0 px-6 py-3 font-bold shadow-lg shadow-red-500/25 transition-all duration-300 hover:scale-[1.02] hover:shadow-red-600/40"
-                style={{ 
-                  background: 'linear-gradient(to right, #ef4444, #f97316)',
-                  WebkitBoxReflect: 'below 0px linear-gradient(to bottom, rgba(0,0,0,0.0), rgba(0,0,0,0.2))'
-                }}
-              >
-                <Link 
-                  href="/register" 
-                  className="relative z-10 flex h-full w-full items-center justify-center text-white"
-                >
-                  {/* Visible text with icons */}
-                  <div className="absolute flex items-center text-sm transition-all duration-300 group-hover:-translate-y-full">
-                    <Rocket className="mr-2 h-5 w-5 group-hover:animate-bounce" />
-                    Launch Now
-                    <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                  </div>
-              
-                  {/* Hidden text that appears on hover */}
-                  <div className="absolute flex items-center text-sm opacity-0 transition-all duration-300 group-hover:opacity-100">
-                    Join Competition
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </div>
-              
-                  {/* Flame animation */}
-                  <div className="absolute inset-0 overflow-hidden">
-                    <div className="absolute -bottom-10 -left-10 -right-10 top-0 animate-flame bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj48ZmlsdGVyIGlkPSJub2lzZSIgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuMDUiIG51bU9jdGF2ZXM9IjUiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48L2ZpbHRlcj48L3N2Zz4=')] opacity-40 mix-blend-screen"></div>
-                  </div>
-              
-                  {/* Glow effect */}
-                  <div className="absolute inset-0 rounded-xl bg-red-500 opacity-0 transition-opacity duration-300 group-hover:opacity-20"></div>
-                </Link>
-              </Button>
-              
-              <style jsx>{`
-                @keyframes flame {
-                  0% { transform: translateY(0) scale(1); opacity: 0.8; }
-                  50% { transform: translateY(-5px) scale(1.05); opacity: 1; }
-                  100% { transform: translateY(0) scale(1); opacity: 0.8; }
-                }
-                .animate-flame {
-                  animation: flame 2s ease-in-out infinite;
-                  background-size: 100px 100px;
-                }
-              `}</style>
+                    asChild
+                    className="group relative h-12 w-48 overflow-hidden rounded-xl border-0 px-6 py-2 font-bold shadow-lg shadow-red-500/25 transition-all duration-300 hover:scale-[1.02] hover:shadow-red-600/40"
+                    style={{ 
+                      background: 'linear-gradient(to right, #ef4444, #f97316)',
+                      WebkitBoxReflect: 'below 0px linear-gradient(to bottom, rgba(0,0,0,0.0), rgba(0,0,0,0.2))'
+                    }}
+                  >
+                    <Link 
+                      href="/register" 
+                      className="relative z-10 flex h-full w-full items-center justify-center text-white"
+                    >
+                      <div className="flex items-center text-sm">
+                        <Rocket className="mr-2 h-4 w-4 group-hover:animate-bounce" />
+                        Launch Now
+                      </div>
+                      
+                      {/* Flame effect */}
+                      <div className="absolute inset-0 overflow-hidden">
+                        <div className="absolute -bottom-5 -left-5 -right-5 top-0 animate-flame bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj48ZmlsdGVyIGlkPSJub2lzZSIgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuMDUiIG51bU9jdGF2ZXM9IjUiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48L2ZpbHRlcj48L3N2Zz4=')] opacity-30 mix-blend-screen"></div>
+                      </div>
+                    </Link>
+                  </Button>
 
 
               {admitCardEnabled && (
