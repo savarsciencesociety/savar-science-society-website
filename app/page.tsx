@@ -249,11 +249,10 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
               <Button
                 asChild
-                size="lg"
-                className="group relative overflow-hidden rounded-2xl border-0 px-10 py-6 font-bold shadow-2xl shadow-cyan-500/25 transition-all duration-300 hover:scale-105 hover:shadow-purple-500/25"
+                className="group relative h-16 w-48 overflow-hidden rounded-xl border-0 px-6 py-3 font-bold shadow-lg shadow-red-500/25 transition-all duration-300 hover:scale-[1.02] hover:shadow-red-600/40"
                 style={{ 
-                  background: 'linear-gradient(to right, #06b6d4, #8b5cf6)',
-                  WebkitBoxReflect: 'below 0px linear-gradient(to bottom, rgba(0,0,0,0.0), rgba(0,0,0,0.4))'
+                  background: 'linear-gradient(to right, #ef4444, #f97316)',
+                  WebkitBoxReflect: 'below 0px linear-gradient(to bottom, rgba(0,0,0,0.0), rgba(0,0,0,0.2))'
                 }}
               >
                 <Link 
@@ -261,44 +260,39 @@ export default function HomePage() {
                   className="relative z-10 flex h-full w-full items-center justify-center text-white"
                 >
                   {/* Visible text with icons */}
-                  <div className="absolute flex items-center transition-all duration-300 group-hover:-translate-y-full group-hover:opacity-0">
-                    <Rocket className="mr-3 h-6 w-6 group-hover:animate-bounce" />
-                    Launch Registration
-                    <ArrowRight className="ml-3 h-6 w-6 transition-transform group-hover:translate-x-1" />
+                  <div className="absolute flex items-center text-sm transition-all duration-300 group-hover:-translate-y-full">
+                    <Rocket className="mr-2 h-5 w-5 group-hover:animate-bounce" />
+                    Launch Now
+                    <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                   </div>
               
                   {/* Hidden text that appears on hover */}
-                  <div className="absolute flex items-center opacity-0 transition-all duration-300 group-hover:opacity-100">
-                    Click To Go
-                    <ArrowRight className="ml-3 h-6 w-6" />
+                  <div className="absolute flex items-center text-sm opacity-0 transition-all duration-300 group-hover:opacity-100">
+                    Join Competition
+                    <ArrowRight className="ml-2 h-5 w-5" />
                   </div>
               
-                  {/* Wave animation */}
-                  <svg
-                    className="absolute top-0 left-0 h-full w-full scale-x-125 rotate-180 opacity-50 transition-all duration-500 group-hover:opacity-80"
-                    viewBox="0 0 1200 120"
-                    preserveAspectRatio="none"
-                  >
-                    <path
-                      d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
-                      fill="currentColor"
-                      className="text-cyan-400"
-                      opacity="0.25"
-                    ></path>
-                    <path
-                      d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z"
-                      fill="currentColor"
-                      className="text-purple-500"
-                      opacity="0.5"
-                    ></path>
-                    <path
-                      d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z"
-                      fill="currentColor"
-                      className="text-cyan-300"
-                    ></path>
-                  </svg>
+                  {/* Flame animation */}
+                  <div className="absolute inset-0 overflow-hidden">
+                    <div className="absolute -bottom-10 -left-10 -right-10 top-0 animate-flame bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj48ZmlsdGVyIGlkPSJub2lzZSIgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuMDUiIG51bU9jdGF2ZXM9IjUiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48L2ZpbHRlcj48L3N2Zz4=')] opacity-40 mix-blend-screen"></div>
+                  </div>
+              
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 rounded-xl bg-red-500 opacity-0 transition-opacity duration-300 group-hover:opacity-20"></div>
                 </Link>
               </Button>
+              
+              <style jsx>{`
+                @keyframes flame {
+                  0% { transform: translateY(0) scale(1); opacity: 0.8; }
+                  50% { transform: translateY(-5px) scale(1.05); opacity: 1; }
+                  100% { transform: translateY(0) scale(1); opacity: 0.8; }
+                }
+                .animate-flame {
+                  animation: flame 2s ease-in-out infinite;
+                  background-size: 100px 100px;
+                }
+              `}</style>
 
 
               {admitCardEnabled && (
