@@ -247,12 +247,7 @@ export default function HomePage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
-              export default function FancyRegisterButton() {
-                const [hovered, setHovered] = useState(false);
               
-                return (
-                  <div className="relative flex justify-center items-center my-10">
-                    <Link href="/register">
                       <button
                         onMouseEnter={() => setHovered(true)}
                         onMouseLeave={() => setHovered(false)}
@@ -285,10 +280,6 @@ export default function HomePage() {
                           ></path>
                         </svg>
                       </button>
-                    </Link>
-                  </div>
-                );
-              }
 
               {admitCardEnabled && (
                 <Button
