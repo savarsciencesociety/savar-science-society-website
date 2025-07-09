@@ -250,77 +250,51 @@ export default function HomePage() {
               <Button
                 asChild
                 size="lg"
-                className="group bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 rounded-2xl shadow-2xl shadow-cyan-500/25 hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300 border-0 px-10 py-6 relative overflow-hidden"
-                style={{ WebkitBoxReflect: "below 0px linear-gradient(to bottom, rgba(0,0,0,0.0), rgba(0,0,0,0.4))" }}
+                className="group relative overflow-hidden rounded-2xl border-0 px-10 py-6 font-bold shadow-2xl shadow-cyan-500/25 transition-all duration-300 hover:scale-105 hover:shadow-purple-500/25"
+                style={{ 
+                  background: 'linear-gradient(to right, #06b6d4, #8b5cf6)',
+                  WebkitBoxReflect: 'below 0px linear-gradient(to bottom, rgba(0,0,0,0.0), rgba(0,0,0,0.4))'
+                }}
               >
-                <Link href="/register" className="cursor-pointer z-10">
-                  <div className="absolute z-40 font-bold bg-gradient-to-r from-cyan-500 to-purple-500 bg-clip-text text-transparent top-1/2 left-1/2 -translate-x-1/2 group-hover:-translate-y-full h-full w-full transition-all duration-300 -translate-y-[30%] flex items-center justify-center">
+                <Link 
+                  href="/register" 
+                  className="relative z-10 flex h-full w-full items-center justify-center text-white"
+                >
+                  {/* Visible text with icons */}
+                  <div className="absolute flex items-center transition-all duration-300 group-hover:-translate-y-full group-hover:opacity-0">
                     <Rocket className="mr-3 h-6 w-6 group-hover:animate-bounce" />
                     Launch Registration
-                    <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="ml-3 h-6 w-6 transition-transform group-hover:translate-x-1" />
                   </div>
-                  <div className="absolute z-40 top-1/2 left-1/2 bg-gradient-to-r from-cyan-700 to-purple-700 bg-clip-text text-transparent -translate-x-1/2 translate-y-full h-full w-full transition-all duration-300 group-hover:-translate-y-[40%] flex items-center justify-center font-extrabold">
+              
+                  {/* Hidden text that appears on hover */}
+                  <div className="absolute flex items-center opacity-0 transition-all duration-300 group-hover:opacity-100">
                     Click To Go
                     <ArrowRight className="ml-3 h-6 w-6" />
                   </div>
+              
+                  {/* Wave animation */}
                   <svg
-                    className="absolute w-full h-full scale-x-125 rotate-180 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 group-hover:animate-none animate-pulse group-hover:-translate-y-[45%] transition-all duration-300"
-                    viewBox="0 0 2400 800"
-                    version="1.1"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <defs>
-                      <linearGradient id="grad" y2="100%" x2="50%" y1="0%" x1="50%">
-                        <stop offset="0%" stopOpacity="1" stopColor="hsl(180, 100%, 50%)"></stop>
-                        <stop offset="100%" stopOpacity="1" stopColor="hsl(280, 100%, 60%)"></stop>
-                      </linearGradient>
-                    </defs>
-                    <g transform="matrix(1,0,0,1,0,-91.0877685546875)" fill="url(#grad)">
-                      <path
-                        opacity="0.05"
-                        transform="matrix(1,0,0,1,0,35)"
-                        d="M 0 305.9828838196134 Q 227.6031525693441 450 600 302.17553022897005 Q 1010.7738828515054 450 1200 343.3024459932802 Q 1379.4406250195766 450 1800 320.38902780838214 Q 2153.573162029817 450 2400 314.38564046970816 L 2400 800 L 0 800 L 0 340.3112176762882 Z"
-                      ></path>
-                      <path
-                        opacity="0.21"
-                        transform="matrix(1,0,0,1,0,70)"
-                        d="M 0 305.9828838196134 Q 227.6031525693441 450 600 302.17553022897005 Q 1010.7738828515054 450 1200 343.3024459932802 Q 1379.4406250195766 450 1800 320.38902780838214 Q 2153.573162029817 450 2400 314.38564046970816 L 2400 800 L 0 800 L 0 340.3112176762882 Z"
-                      ></path>
-                      <path
-                        opacity="0.37"
-                        transform="matrix(1,0,0,1,0,105)"
-                        d="M 0 305.9828838196134 Q 227.6031525693441 450 600 302.17553022897005 Q 1010.7738828515054 450 1200 343.3024459932802 Q 1379.4406250195766 450 1800 320.38902780838214 Q 2153.573162029817 450 2400 314.38564046970816 L 2400 800 L 0 800 L 0 340.3112176762882 Z"
-                      ></path>
-                      <path
-                        opacity="0.53"
-                        transform="matrix(1,0,0,1,0,140)"
-                        d="M 0 305.9828838196134 Q 227.6031525693441 450 600 302.17553022897005 Q 1010.7738828515054 450 1200 343.3024459932802 Q 1379.4406250195766 450 1800 320.38902780838214 Q 2153.573162029817 450 2400 314.38564046970816 L 2400 800 L 0 800 L 0 340.3112176762882 Z"
-                      ></path>
-                      <path
-                        opacity="0.68"
-                        transform="matrix(1,0,0,1,0,175)"
-                        d="M 0 305.9828838196134 Q 227.6031525693441 450 600 302.17553022897005 Q 1010.7738828515054 450 1200 343.3024459932802 Q 1379.4406250195766 450 1800 320.38902780838214 Q 2153.573162029817 450 2400 314.38564046970816 L 2400 800 L 0 800 L 0 340.3112176762882 Z"
-                      ></path>
-                      <path
-                        opacity="0.84"
-                        transform="matrix(1,0,0,1,0,210)"
-                        d="M 0 305.9828838196134 Q 227.6031525693441 450 600 302.17553022897005 Q 1010.7738828515054 450 1200 343.3024459932802 Q 1379.4406250195766 450 1800 320.38902780838214 Q 2153.573162029817 450 2400 314.38564046970816 L 2400 800 L 0 800 L 0 340.3112176762882 Z"
-                      ></path>
-                      <path
-                        opacity="1"
-                        transform="matrix(1,0,0,1,0,245)"
-                        d="M 0 305.9828838196134 Q 227.6031525693441 450 600 302.17553022897005 Q 1010.7738828515054 450 1200 343.3024459932802 Q 1379.4406250195766 450 1800 320.38902780838214 Q 2153.573162029817 450 2400 314.38564046970816 L 2400 800 L 0 800 L 0 340.3112176762882 Z"
-                      ></path>
-                    </g>
-                  </svg>
-                  <svg
-                    className="absolute w-full h-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-[30%] group-hover:-translate-y-[33%] group-hover:scale-95 transition-all duration-500 z-40 fill-cyan-500"
-                    viewBox="0 0 1440 320"
-                    xmlns="http://www.w3.org/2000/svg"
+                    className="absolute top-0 left-0 h-full w-full scale-x-125 rotate-180 opacity-50 transition-all duration-500 group-hover:opacity-80"
+                    viewBox="0 0 1200 120"
+                    preserveAspectRatio="none"
                   >
                     <path
-                      d="M0,288L9.2,250.7C18.5,213,37,139,55,133.3C73.8,128,92,192,111,224C129.2,256,148,256,166,256C184.6,256,203,256,222,250.7C240,245,258,235,277,213.3C295.4,192,314,160,332,170.7C350.8,181,369,235,388,229.3C406.2,224,425,160,443,122.7C461.5,85,480,75,498,74.7C516.9,75,535,85,554,101.3C572.3,117,591,139,609,170.7C627.7,203,646,245,665,256C683.1,267,702,245,720,245.3C738.5,245,757,267,775,266.7C793.8,267,812,245,831,234.7C849.2,224,868,224,886,218.7C904.6,213,923,203,942,170.7C960,139,978,85,997,53.3C1015.4,21,1034,11,1052,48C1070.8,85,1089,171,1108,197.3C1126.2,224,1145,192,1163,197.3C1181.5,203,1200,245,1218,224C1236.9,203,1255,117,1274,106.7C1292.3,96,1311,160,1329,170.7C1347.7,181,1366,139,1385,128C1403.1,117,1422,139,1431,149.3L1440,160L1440,320L1430.8,320C1421.5,320,1403,320,1385,320C1366.2,320,1348,320,1329,320C1310.8,320,1292,320,1274,320C1255.4,320,1237,320,1218,320C1200,320,1182,320,1163,320C1144.6,320,1126,320,1108,320C1089.2,320,1071,320,1052,320C1033.8,320,1015,320,997,320C978.5,320,960,320,942,320C923.1,320,905,320,886,320C867.7,320,849,320,831,320C812.3,320,794,320,775,320C756.9,320,738,320,720,320C701.5,320,683,320,665,320C646.2,320,628,320,609,320C590.8,320,572,320,554,320C535.4,320,517,320,498,320C480,320,462,320,443,320C424.6,320,406,320,388,320C369.2,320,351,320,332,320C313.8,320,295,320,277,320C258.5,320,240,320,222,320C203.1,320,185,320,166,320C147.7,320,129,320,111,320C92.3,320,74,320,55,320C36.9,320,18,320,9,320L0,320Z"
-                      fillOpacity="1"
+                      d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
+                      fill="currentColor"
+                      className="text-cyan-400"
+                      opacity="0.25"
+                    ></path>
+                    <path
+                      d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z"
+                      fill="currentColor"
+                      className="text-purple-500"
+                      opacity="0.5"
+                    ></path>
+                    <path
+                      d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z"
+                      fill="currentColor"
+                      className="text-cyan-300"
                     ></path>
                   </svg>
                 </Link>
