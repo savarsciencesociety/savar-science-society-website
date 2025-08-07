@@ -12,6 +12,7 @@ import { MobileNav } from "@/components/mobile-nav"
 import { IMAGES, SOCIAL_LINKS } from "@/lib/image-paths"
 import { OLYMPIAD_PHOTOS } from "@/lib/google-drive-utils"
 import { getAdmitCardSetting } from "@/lib/actions"
+import { Toaster } from "@/components/ui/toaster"
 import {
   Calendar,
   MapPin,
@@ -36,7 +37,7 @@ import { GoogleDriveImage } from "@/components/google-drive-image"
 
 // --- New MergedLaunchButton Component ---
 // This self-contained component encapsulates the complex button design, making the main page cleaner.
-const FadeInUp = ({ children }) => <div>{children}</div>;
+const FadeInUp = ({ children }: { children: React.ReactNode }) => <div>{children}</div>;
 
 // 1. Define the new MergedLaunchButton component in your file.
 // I have adapted it to be a <div> so it can be nested inside your <a> tag.
@@ -108,26 +109,6 @@ const MergedLaunchButton = () => {
   );
 };
 
-
-// 2. Use the new component inside your existing page structure.
-// This example component demonstrates how to replace your old button.
-const YourPageComponent = () => {
-  return (
-    <div className="flex items-center justify-center w-full min-h-screen bg-gray-900">
-      <FadeInUp>
-        {/* I've replaced the <Link> component with a standard <a> tag to fix the error. */}
-        <a
-          href="/registration"
-          className="mt-6"
-          aria-label="Launch Registration"
-        >
-          {/* Just drop the new component here! */}
-          <MergedLaunchButton />
-        </a>
-      </FadeInUp>
-    </div>
-  );
-};
 
 // Throttle function for performance
 const throttle = (func: Function, delay: number) => {
@@ -343,7 +324,9 @@ export default function HomePage() {
 
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
               {/* --- The MergedLaunchButton is now integrated here --- */}
-              <MergedLaunchButton />
+              <Link href="/register" className="mt-6" aria-label="Launch Registration">
+                <MergedLaunchButton />
+              </Link>
 
               {admitCardEnabled && (
                 <Button
